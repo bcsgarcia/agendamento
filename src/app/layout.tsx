@@ -14,6 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Link href="/admin/clientes" className="text-gray-600 hover:text-gray-900">Clientes</Link>
           <Link href="/admin/servicos" className="text-gray-600 hover:text-gray-900">Serviços</Link>
           <Link href="/admin/fila-urgente" className="text-gray-600 hover:text-gray-900">Urgências</Link>
+          <Link href="/admin/feature-flags" className="text-gray-600 hover:text-gray-900">Feature Flags</Link>
         </nav>
         {children}
       </body>

@@ -4,7 +4,7 @@
  * Uso (uma vez, no servidor):
  *   tsx prisma/seed.ts --email=bcsgarcia@outlook.com --password=SuaSenha --name=Bruno
  *
- * Ou via env vars:
+ * Ou via env vars (preferido pra Docker):
  *   ADMIN_EMAIL=... ADMIN_PASSWORD=... ADMIN_NAME=... tsx prisma/seed.ts
  */
 import bcrypt from 'bcryptjs';
@@ -13,11 +13,16 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 function arg(name: string): string | null {
+  // Primeiro tenta via flag --email=...
   const flag = `--${name}=`;
   const argv = process.argv.find(a => a.startsWith(flag));
   if (argv) return argv.slice(flag.length);
+  // Depois tenta ADMIN_<NAME> em uppercase (preferido em Docker)
+  const adminEnv = process.env[`ADMIN_${name.toUpperCase()}`];
+  if (adminEnv) return adminEnv;
+  // Fallback: <NAME> em uppercase
   const envName = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-  return process.env[envName.toUpperCase()] || process.env[name.toUpperCase()] || null;
+  return process.env[envName.toUpperCase()] || null;
 }
 
 async function main() {
@@ -27,7 +32,8 @@ async function main() {
 
   if (!email || !password) {
     console.error('Erro: --email e --password são obrigatórios.');
-    console.error('Uso: tsx prisma/seed.ts --email=voce@x.com --password=suasenha [--name=SeuNome]');
+    console.error('Uso 1: tsx prisma/seed.ts --email=voce@x.com --password=suasenha');
+    console.error('Uso 2: ADMIN_EMAIL=voce@x.com ADMIN_PASSWORD=suasenha tsx prisma/seed.ts');
     process.exit(1);
   }
 

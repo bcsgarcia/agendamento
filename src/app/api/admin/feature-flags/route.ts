@@ -5,10 +5,6 @@ import { prisma } from '@/lib/db';
 export async function POST(req: NextRequest) {
   const form = await req.formData();
 
-  // Quando clica num toggle, o form envia APENAS o toggle clicado.
-  // Outros toggles não vêm no submit (HTML form behavior).
-  // Os hidden inputs "flag[NOME]" sempre vêm, mas só servem de fallback.
-
   let flagChanged: { nome: string; ativo: boolean } | null = null;
 
   for (const [key, value] of form.entries()) {
@@ -16,12 +12,10 @@ export async function POST(req: NextRequest) {
       const nome = key.replace('toggle_', '');
       const novoValor = value.toString() === 'on';
       flagChanged = { nome, ativo: novoValor };
-      break; // só pode ter um toggle clicado por vez
+      break;
     }
   }
 
-  // Se nenhum toggle foi clicado, usa o hidden input "flag[NOME]" como fallback
-  // (caso você queira futuramente um "salvar todos" que submete todos os flags)
   if (!flagChanged) {
     for (const [key, value] of form.entries()) {
       if (key.startsWith('flag[') && key.endsWith(']')) {
@@ -39,6 +33,10 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Redireciona de volta
-  return NextResponse.redirect(new URL('/admin/feature-flags', req.url), { status: 303 });
+  // Redirect com path relativo (resolve pro dominio atual do request, sem localhost)
+  const baseUrl = process.env.APP_URL || req.headers.get('origin') || new URL(req.url).origin;
+  return NextResponse.redirect(
+    new URL('/admin/feature-flags', baseUrl),
+    { status: 303 }
+  );
 }

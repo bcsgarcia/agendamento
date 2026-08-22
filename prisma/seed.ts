@@ -1,25 +1,66 @@
+/**
+ * Setup inicial: cria primeiro admin user.
+ *
+ * Uso (uma vez, no servidor):
+ *   tsx prisma/seed.ts --email=bcsgarcia@outlook.com --password=SuaSenha --name=Bruno
+ *
+ * Ou via env vars:
+ *   ADMIN_EMAIL=... ADMIN_PASSWORD=... ADMIN_NAME=... tsx prisma/seed.ts
+ */
+import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('Seeding...');
-  const services = [
-    { slug: 'procedimento-basico', name: 'Procedimento Básico', description: 'Procedimento genérico de teste (placeholder).', durationMin: 60, priceCents: 15000 },
-    { slug: 'procedimento-avancado', name: 'Procedimento Avançado', description: 'Procedimento genérico de duração estendida (placeholder).', durationMin: 90, priceCents: 25000 },
-    { slug: 'consultoria', name: 'Consultoria Inicial', description: 'Sessão de avaliação inicial (placeholder).', durationMin: 30, priceCents: 8000 },
-    { slug: 'pacote-3-sessoes', name: 'Pacote 3 Sessões', description: 'Pacote com desconto para 3 sessões (placeholder).', durationMin: 180, priceCents: 40000 },
-    { slug: 'manutencao', name: 'Manutenção', description: 'Sessão de manutenção/retorno (placeholder).', durationMin: 45, priceCents: 12000 }
-  ];
-  for (const s of services) {
-    await prisma.service.upsert({ where: { slug: s.slug }, update: s, create: s });
-  }
-  const courses = [
-    { slug: 'curso-online-1', name: 'Curso Online — Tópico Genérico', modality: 'online', description: 'Curso online (placeholder).', priceCents: 19700, durationMin: null, purchaseUrl: '' },
-    { slug: 'curso-presencial-1', name: 'Curso Presencial — Tópico Genérico', modality: 'presencial', description: 'Curso presencial (placeholder).', priceCents: 49700, durationMin: 240, purchaseUrl: '' }
-  ];
-  for (const c of courses) {
-    await prisma.course.upsert({ where: { slug: c.slug }, update: c, create: c });
-  }
-  console.log(`OK: ${services.length} services + ${courses.length} courses`);
+function arg(name: string): string | null {
+  const flag = `--${name}=`;
+  const argv = process.argv.find(a => a.startsWith(flag));
+  if (argv) return argv.slice(flag.length);
+  const envName = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  return process.env[envName.toUpperCase()] || process.env[name.toUpperCase()] || null;
 }
-main().catch(console.error).finally(() => prisma.$disconnect());
+
+async function main() {
+  const email = arg('email');
+  const password = arg('password');
+  const name = arg('name') || null;
+
+  if (!email || !password) {
+    console.error('Erro: --email e --password são obrigatórios.');
+    console.error('Uso: tsx prisma/seed.ts --email=voce@x.com --password=suasenha [--name=SeuNome]');
+    process.exit(1);
+  }
+
+  if (password.length < 8) {
+    console.error('Erro: senha deve ter pelo menos 8 caracteres.');
+    process.exit(1);
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const user = await prisma.user.upsert({
+    where: { email: email.toLowerCase().trim() },
+    create: {
+      email: email.toLowerCase().trim(),
+      passwordHash,
+      name,
+      role: 'admin',
+      ativo: true,
+    },
+    update: {
+      passwordHash,
+      name,
+      ativo: true,
+    },
+  });
+
+  console.log(`✓ Usuário criado/atualizado: ${user.email} (id: ${user.id})`);
+  console.log('Agora faça login em /admin/login');
+}
+
+main()
+  .catch(e => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());

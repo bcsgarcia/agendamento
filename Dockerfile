@@ -21,4 +21,5 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.js ./next.config.js
 EXPOSE 3000
-CMD ["sh", "-c", "node node_modules/prisma/build/index.js db push --skip-generate && npx next start"]
+# db push pra sincronizar schema + seed opcional (se ADMIN_EMAIL/ADMIN_PASSWORD setadas)
+CMD ["sh", "-c", "node node_modules/prisma/build/index.js db push --skip-generate && (if [ -n \"$ADMIN_EMAIL\" ] && [ -n \"$ADMIN_PASSWORD\" ]; then npx tsx prisma/seed.ts; fi) && npx next start"]

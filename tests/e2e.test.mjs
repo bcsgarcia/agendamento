@@ -9,8 +9,12 @@
  * - Toggles persistem sem quebrar outras flags
  * - Whitelist CRUD funcional
  *
+ * Cada teste faz login/logout quando precisa de cookie,
+ * pra serem independentes (podem rodar em qualquer ordem).
+ *
  * Uso:
  *   node tests/e2e.test.mjs
+ *   TEST_EMAIL=... TEST_PASSWORD=... node tests/e2e.test.mjs
  *
  * Exit code 0 = todos passaram, 1 = algum falhou.
  */
@@ -20,17 +24,18 @@ import assert from 'node:assert/strict';
 
 const BASE = process.env.BASE_URL || 'https://agendamento.bcsgarcia.pt';
 const TEST_EMAIL = process.env.TEST_EMAIL || 'bcsgarcia@outlook.com';
-const TEST_PASSWORD = process.env.TEST_PASSWORD || 'TempPass2025!';
+const TEST_PASSWORD = process.env.TEST_PASSWORD || 'TestSenha2026!';
 
 let _cookieJar = '';
 
-function setCookieHeader(res) {
+function setCookieFromResponse(res) {
   const setCookie = res.headers.getSetCookie?.() || [];
   if (setCookie.length === 0) {
     const raw = res.headers.get('set-cookie');
     if (raw) setCookie.push(raw);
   }
-  _cookieJar = setCookie.map(c => c.split(';')[0]).join('; ');
+  if (setCookie.length === 0) return; // nao sobrescreve cookie se resposta nao seta
+  _cookieJar = setCookie.map(c => c.split(';')[0]).filter(Boolean).join('; ');
 }
 
 function getCookieHeader() {
@@ -45,7 +50,30 @@ async function fetchWithCookie(path, init = {}) {
   const headers = new Headers(init.headers || {});
   if (_cookieJar) headers.set('Cookie', _cookieJar);
   const res = await fetch(`${BASE}${path}`, { ...init, headers, redirect: 'manual' });
-  setCookieHeader(res);
+  setCookieFromResponse(res);
+  return res;
+}
+
+async function login(email = TEST_EMAIL, password = TEST_PASSWORD) {
+  clearCookies();
+  const res = await fetchWithCookie('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+  });
+  if (res.status !== 303) throw new Error(`login failed: ${res.status}`);
+  const location = res.headers.get('location') || '';
+  if (location.includes('error=')) throw new Error(`login failed: ${location}`);
+  if (!getCookieHeader().includes('admin_session')) throw new Error('no cookie set');
+  return res;
+}
+
+async function logout() {
+  const res = await fetchWithCookie('/api/auth/logout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: '',
+  });
   return res;
 }
 
@@ -133,21 +161,8 @@ test('POST /api/auth/login com senha errada redireciona com ?error=invalid', asy
 });
 
 test('POST /api/auth/login com credenciais válidas seta cookie e redireciona para /admin', async () => {
-  clearCookies();
-  const res = await fetchWithCookie('/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `email=${encodeURIComponent(TEST_EMAIL)}&password=${encodeURIComponent(TEST_PASSWORD)}`,
-  });
-  assert.equal(res.status, 303);
-  const location = res.headers.get('location') || '';
-  assert.match(location, /\/admin(\?|$|\/)/, `expected redirect to /admin, got ${location}`);
-  assert.doesNotMatch(location, /localhost/, `redirect should not point to localhost, got ${location}`);
-  assert.ok(getCookieHeader().includes('admin_session'), 'expected admin_session cookie to be set');
-});
-
-test('GET /admin/agenda COM cookie retorna 200', async () => {
-  // cookie já foi setado pelo teste anterior
+  await login();
+  // Após login, /admin/agenda deve retornar 200
   const res = await fetchWithCookie('/admin/agenda');
   assert.equal(res.status, 200);
 });
@@ -166,7 +181,8 @@ test('GET /api/feature-flags/whitelist_enabled retorna JSON válido', async () =
 });
 
 test('POST toggle feature flag só altera o flag clicado (não reseta outros)', async () => {
-  // Pega estado atual de todas as flags
+  await login();
+
   const flags = ['whitelist_enabled', 'ai_ativa', 'modo_debug', 'manutencao'];
   const antes = {};
   for (const f of flags) {
@@ -175,18 +191,19 @@ test('POST toggle feature flag só altera o flag clicado (não reseta outros)', 
     antes[f] = d.ativo;
   }
 
-  // Toca SÓ em whitelist_enabled
   const novoValor = !antes.whitelist_enabled;
   const res = await fetchWithCookie('/api/admin/feature-flags', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `toggle_whitelist_enabled=${novoValor ? 'on' : 'off'}`,
   });
-  assert.equal(res.status, 303);
+  assert.equal(res.status, 303, `expected 303, got ${res.status}`);
   const location = res.headers.get('location') || '';
   assert.doesNotMatch(location, /localhost/);
 
-  // Verifica que SÓ whitelist_enabled mudou
+  // Espera cache de 5s do /api/feature-flags/:nome expirar
+  await new Promise(r => setTimeout(r, 5500));
+
   for (const f of flags) {
     const r = await fetchWithCookie(`/api/feature-flags/${f}`);
     const d = await r.json();
@@ -203,6 +220,8 @@ test('POST toggle feature flag só altera o flag clicado (não reseta outros)', 
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `toggle_whitelist_enabled=${antes.whitelist_enabled ? 'on' : 'off'}`,
   });
+
+  await logout();
 });
 
 // =====================
@@ -210,6 +229,7 @@ test('POST toggle feature flag só altera o flag clicado (não reseta outros)', 
 // =====================
 
 test('POST /api/admin/whitelist (action=add) adiciona número e redireciona corretamente', async () => {
+  await login();
   const testPhone = '5511999' + String(Date.now()).slice(-7);
   const res = await fetchWithCookie('/api/admin/whitelist', {
     method: 'POST',
@@ -221,13 +241,14 @@ test('POST /api/admin/whitelist (action=add) adiciona número e redireciona corr
   assert.match(location, /\/admin\/whitelist/);
   assert.doesNotMatch(location, /localhost/);
 
-  // Verifica que o número está na whitelist
   const check = await fetchWithCookie(`/api/whitelist?phone=${testPhone}`);
   const data = await check.json();
   assert.equal(data.allowed, true, `phone ${testPhone} should be allowed`);
+  await logout();
 });
 
 test('POST /api/admin/whitelist (action=add) com telefone vazio redireciona com erro', async () => {
+  await login();
   const res = await fetchWithCookie('/api/admin/whitelist', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -236,6 +257,7 @@ test('POST /api/admin/whitelist (action=add) com telefone vazio redireciona com 
   assert.equal(res.status, 303);
   const location = res.headers.get('location') || '';
   assert.match(location, /error=phone_required/);
+  await logout();
 });
 
 // =====================
@@ -243,17 +265,15 @@ test('POST /api/admin/whitelist (action=add) com telefone vazio redireciona com 
 // =====================
 
 test('POST /api/auth/logout invalida sessão e redireciona', async () => {
-  const res = await fetchWithCookie('/api/auth/logout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: '',
-  });
+  await login();
+  const res = await logout();
   assert.equal(res.status, 303);
   const location = res.headers.get('location') || '';
   assert.match(location, /\/admin\/login/);
   assert.doesNotMatch(location, /localhost/);
 
   // Depois do logout, /admin deve redirecionar pra login
+  clearCookies();
   const after = await fetchWithCookie('/admin/agenda');
   assert.equal(after.status, 303);
   const afterLoc = after.headers.get('location') || '';

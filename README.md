@@ -100,3 +100,5 @@ package.json
 - **Primeiro seed**: 5 serviços + 2 cursos placeholder
 - **Patch no Dockerfile**: força bind `0.0.0.0` (Docker injeta HOSTNAME=container-id)
 - **Próximo passo**: configurar tools do Fluxi pra consumir estes endpoints
+
+## Test deploy 1787427272

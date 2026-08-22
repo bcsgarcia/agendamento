@@ -1,3 +1,18 @@
+function countryFlag(phone: string): string {
+  // Detecta país pelo DDI
+  if (phone.startsWith('55')) return '🇧🇷';
+  if (phone.startsWith('351')) return '🇵🇹';
+  if (phone.startsWith('1')) return '🇺🇸';
+  if (phone.startsWith('44')) return '🇬🇧';
+  if (phone.startsWith('34')) return '🇪🇸';
+  if (phone.startsWith('33')) return '🇫🇷';
+  if (phone.startsWith('49')) return '🇩🇪';
+  if (phone.startsWith('54')) return '🇦🇷';
+  if (phone.startsWith('351')) return '🇵🇹';
+  if (phone.startsWith('52')) return '🇲🇽';
+  return '🌍';
+}
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -36,15 +51,23 @@ export default async function WhitelistPage({ searchParams }: { searchParams: { 
             />
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Telefone (com DDI)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Telefone (com DDI do país)</label>
             <input
               type="text"
               name="phone"
               placeholder="5511912345678"
               required
+              minLength={10}
+              maxLength={15}
+              pattern="[0-9]+"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
             />
-            <p className="text-xs text-gray-500 mt-1">Formato: 55 + DDD + número (ex: 5511912345678)</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Apenas dígitos, com DDI. Exemplos:{' '}
+              <span className="font-mono">5511912345678</span> 🇧🇷 ·{' '}
+              <span className="font-mono">351912345678</span> 🇵🇹 ·{' '}
+              <span className="font-mono">14155552671</span> 🇺🇸
+            </p>
           </div>
           <button
             type="submit"
@@ -66,6 +89,7 @@ export default async function WhitelistPage({ searchParams }: { searchParams: { 
             <div key={entry.id} className="p-4 flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3">
+                  <span className="text-lg" title={entry.phone}>{countryFlag(entry.phone)}</span>
                   <code className="font-mono text-sm font-semibold bg-gray-100 px-2 py-1 rounded">
                     {entry.phone}
                   </code>

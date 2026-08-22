@@ -25,39 +25,29 @@ export default async function FeatureFlagsPage() {
     <main className="p-8 max-w-4xl mx-auto">
       <a href="/admin" className="text-sm text-blue-600">← Voltar</a>
       <h1 className="text-3xl font-bold mt-2 mb-2">Feature Flags</h1>
-      <p className="text-gray-600 mb-6">Liga/desliga funcionalidades em tempo real (sem deploy). Mudanças têm efeito em ~5 segundos (cache).</p>
+      <p className="text-gray-600 mb-6">Liga/desliga funcionalidades em tempo real (sem deploy). Cada toggle salva ao clicar — efeito em ~5 segundos (cache).</p>
 
-      <form action="/api/admin/feature-flags" method="post" className="space-y-3">
-        <input type="hidden" name="_method" value="PUT" />
-
-        <div className="bg-white border rounded-lg divide-y">
-          {allFlags.map(f => (
-            <div key={f.id} className="p-4 flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <code className="font-mono text-sm font-semibold bg-gray-100 px-2 py-1 rounded">{f.nome}</code>
-                  {f.ativo ? (
-                    <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">ATIVO</span>
-                  ) : (
-                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">desligado</span>
-                  )}
-                </div>
-                {f.descricao && <p className="text-sm text-gray-600 mt-1">{f.descricao}</p>}
-                <p className="text-xs text-gray-400 mt-1">
-                  Última atualização: {new Date(f.atualizadoEm).toLocaleString('pt-BR')}
-                </p>
+      <div className="bg-white border rounded-lg divide-y">
+        {allFlags.map(f => (
+          <div key={f.id} className="p-4 flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <code className="font-mono text-sm font-semibold bg-gray-100 px-2 py-1 rounded">{f.nome}</code>
+                {f.ativo ? (
+                  <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">ATIVO</span>
+                ) : (
+                  <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">desligado</span>
+                )}
               </div>
-              <ToggleSwitch nome={f.nome} ativo={f.ativo} />
+              {f.descricao && <p className="text-sm text-gray-600 mt-1">{f.descricao}</p>}
+              <p className="text-xs text-gray-400 mt-1">
+                Última atualização: {new Date(f.atualizadoEm).toLocaleString('pt-BR')}
+              </p>
             </div>
-          ))}
-        </div>
-
-        <div className="flex justify-end pt-4">
-          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            Salvar alterações
-          </button>
-        </div>
-      </form>
+            <ToggleSwitch nome={f.nome} ativo={f.ativo} />
+          </div>
+        ))}
+      </div>
     </main>
   );
 }

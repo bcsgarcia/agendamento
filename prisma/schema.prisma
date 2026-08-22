@@ -1,0 +1,95 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl"]
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id              String   @id @default(uuid())
+  phone           String   @unique
+  name            String?
+  birthDate       DateTime?
+  allergies       String?
+  notes           String?
+  preferredTime   String?
+  tags            String[] @default([])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  bookings        Booking[]
+  conversationState ConversationState?
+}
+
+model Service {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  name            String
+  description     String
+  durationMin     Int
+  priceCents      Int
+  active          Boolean  @default(true)
+  bookings        Booking[]
+}
+
+model Booking {
+  id              String   @id @default(uuid())
+  customerId      String
+  serviceId       String
+  startsAt        DateTime
+  endsAt          DateTime
+  status          String   @default("scheduled")
+  confirmedAt     DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  customer        Customer @relation(fields: [customerId], references: [id])
+  service         Service  @relation(fields: [serviceId], references: [id])
+  @@index([startsAt])
+  @@index([customerId, startsAt])
+}
+
+model Course {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  name            String
+  modality        String
+  description     String
+  priceCents      Int
+  durationMin     Int?
+  purchaseUrl     String   @default("")
+  active          Boolean  @default(true)
+}
+
+model UrgentQueue {
+  id              String   @id @default(uuid())
+  customerId      String?
+  reason          String
+  contextSnapshot String
+  createdAt       DateTime @default(now())
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  @@index([resolvedAt, createdAt])
+}
+
+model ConversationState {
+  id              String   @id @default(uuid())
+  customerId      String   @unique
+  state           String   @default("bot_ativo")
+  lastClientMsgAt DateTime?
+  lastHumanMsgAt  DateTime?
+  lastBotMsgAt    DateTime?
+  contextSummary  String?
+  updatedAt       DateTime @updatedAt
+  customer        Customer @relation(fields: [customerId], references: [id])
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  customerId      String?
+  eventType       String
+  payload         Json
+  createdAt       DateTime @default(now())
+  @@index([createdAt])
+  @@index([eventType, createdAt])
+}

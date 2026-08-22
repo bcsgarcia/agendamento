@@ -1,0 +1,59 @@
+# Docker build context exclusions
+# These files won't be sent to Docker during build, reducing image size and improving security
+
+# Git
+.git
+.gitignore
+
+# Documentation (not needed in image)
+README.md
+*.md
+
+# Environment files (NEVER include in image)
+.env
+.env*.local
+.env.development
+.env.production
+.env.staging
+.env.test
+
+# Secrets
+*.key
+*.pem
+*.crt
+secrets/
+
+# Local development
+node_modules
+.next
+out
+build
+dist
+
+# IDE
+.vscode
+.idea
+
+# Logs
+*.log
+logs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.tar.gz
+*.zip
+backups
+
+# Tests
+tests
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Storybook
+.storybook

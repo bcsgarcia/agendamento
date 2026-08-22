@@ -125,12 +125,10 @@ export default async function WhitelistPage({ searchParams }: { searchParams: { 
                 <form action="/api/admin/whitelist" method="post" className="inline">
                   <input type="hidden" name="action" value="delete" />
                   <input type="hidden" name="id" value={entry.id} />
+                  <input type="hidden" name="phone" value={entry.phone} />
                   <button
                     type="submit"
                     className="px-3 py-1 text-xs rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700"
-                    onClick={(e) => {
-                      if (!confirm(`Remover ${entry.phone}?`)) e.preventDefault();
-                    }}
                   >
                     Remover
                   </button>

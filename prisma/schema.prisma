@@ -84,6 +84,25 @@ model ConversationState {
   customer        Customer @relation(fields: [customerId], references: [id])
 }
 
+model Whitelist {
+  id          String   @id @default(uuid())
+  phone       String   @unique
+  name        String?
+  notes       String?
+  active      Boolean  @default(true)
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+model FeatureFlag {
+  id          String   @id @default(uuid())
+  nome        String   @unique
+  ativo       Boolean  @default(false)
+  descricao   String?
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
 model AuditLog {
   id              String   @id @default(uuid())
   customerId      String?

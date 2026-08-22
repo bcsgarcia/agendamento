@@ -2,6 +2,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+function getBaseUrl(req: NextRequest): string {
+  return (
+    process.env.APP_URL ||
+    req.headers.get('origin') ||
+    (req.headers.get('x-forwarded-proto') && req.headers.get('host')
+      ? `${req.headers.get('x-forwarded-proto')}://${req.headers.get('host')}`
+      : null) ||
+    new URL(req.url).origin
+  );
+}
+
 export async function POST(req: NextRequest) {
   const form = await req.formData();
 
@@ -33,10 +44,6 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Redirect com path relativo (resolve pro dominio atual do request, sem localhost)
-  const baseUrl = process.env.APP_URL || req.headers.get('origin') || new URL(req.url).origin;
-  return NextResponse.redirect(
-    new URL('/admin/feature-flags', baseUrl),
-    { status: 303 }
-  );
+  const baseUrl = getBaseUrl(req);
+  return NextResponse.redirect(new URL('/admin/feature-flags', baseUrl), { status: 303 });
 }

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Clock, Calendar, TrendingUp, Activity } from 'lucide-react';
 import { prisma } from '@/lib/db';
-import { formatBRL } from '@/lib/helpers';
+import { formatEUR } from '@/lib/helpers';
 import { AdminTable } from '@/components/AdminTable';
 import { Card, StatTile, Pill } from '@/components/ui';
 import { DeleteServiceButton } from '../DeleteServiceButton';
@@ -101,7 +101,7 @@ export default async function ServicoDetalhePage({
         />
         <StatTile
           label="Preço"
-          value={formatBRL(servico.priceCents)}
+          value={formatEUR(servico.priceCents)}
           icon={<TrendingUp className="w-5 h-5" />}
         />
         <StatTile

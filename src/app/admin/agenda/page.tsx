@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { CalendarDays } from 'lucide-react';
 import { prisma } from '@/lib/db';
-import { formatBRL } from '@/lib/helpers';
+import { formatEUR } from '@/lib/helpers';
 import { AdminTable } from '@/components/AdminTable';
 import { Pill } from '@/components/ui/Pill';
 import { DeleteBookingButton } from './DeleteBookingButton';
@@ -121,7 +121,7 @@ export default async function AgendaPage() {
               <div>
                 <div className="text-body text-text">{r.serviceName}</div>
                 <div className="text-caption text-text-muted font-mono">
-                  {formatBRL(r.servicePriceCents)}
+                  {formatEUR(r.servicePriceCents)}
                 </div>
               </div>
             ),

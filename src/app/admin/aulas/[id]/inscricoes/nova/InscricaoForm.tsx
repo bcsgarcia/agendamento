@@ -78,7 +78,7 @@ export function InscricaoForm({
 
       <div className="grid grid-cols-3 gap-3 items-end">
         <div>
-          <label className={labelClass}>Valor pago (R$)</label>
+          <label className={labelClass}>Valor pago (€)</label>
           <input
             type="text"
             name="valorPago"

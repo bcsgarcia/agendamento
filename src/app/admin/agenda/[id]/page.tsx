@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { CalendarDays, Clock, User, Scissors, Pencil } from 'lucide-react';
 import { prisma } from '@/lib/db';
-import { formatBRL } from '@/lib/helpers';
+import { formatEUR } from '@/lib/helpers';
 import { Card, Pill } from '@/components/ui';
 import { fmtDate, fmtTime, fmtDateTime, toLocalInput } from '@/lib/agenda-helpers';
 import { QuickBookingAction } from './QuickBookingAction';
@@ -113,7 +113,7 @@ export default async function BookingDetalhePage({ params }: { params: { id: str
                 {booking.service.name}
               </div>
               <div className="text-caption text-text-muted">
-                {booking.service.durationMin} min · {formatBRL(booking.service.priceCents)}
+                {booking.service.durationMin} min · {formatEUR(booking.service.priceCents)}
               </div>
             </div>
           </div>

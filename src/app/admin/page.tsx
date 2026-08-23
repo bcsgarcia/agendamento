@@ -22,6 +22,10 @@ export default function AdminHome() {
           <div className="text-sm text-gray-500">Serviços</div>
           <div className="text-2xl font-semibold mt-2">Catálogo →</div>
         </a>
+        <a href="/admin/cursos" className="p-6 bg-white border rounded-lg hover:shadow">
+          <div className="text-sm text-gray-500">Cursos</div>
+          <div className="text-2xl font-semibold mt-2">Catálogo →</div>
+        </a>
       </div>
       <div className="mt-12 p-6 bg-blue-50 border border-blue-200 rounded-lg">
         <h2 className="font-semibold text-blue-900">Sistema no ar ✅</h2>

@@ -17,6 +17,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Link href="/admin/agenda" className="text-gray-600 hover:text-gray-900">Agenda</Link>
             <Link href="/admin/clientes" className="text-gray-600 hover:text-gray-900">Clientes</Link>
             <Link href="/admin/servicos" className="text-gray-600 hover:text-gray-900">Serviços</Link>
+            <Link href="/admin/cursos" className="text-gray-600 hover:text-gray-900">Cursos</Link>
             <Link href="/admin/fila-urgente" className="text-gray-600 hover:text-gray-900">Urgências</Link>
             <Link href="/admin/whitelist" className="text-gray-600 hover:text-gray-900">Whitelist</Link>
             <Link href="/admin/feature-flags" className="text-gray-600 hover:text-gray-900">Feature Flags</Link>

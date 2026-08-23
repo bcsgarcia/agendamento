@@ -79,6 +79,8 @@ model Aula {
   dataInicio    DateTime
   dataFim       DateTime
   vagasOcupadas Int         @default(0)
+  /// Override opcional do limite de vagas. Quando NULL, usa Course.maxAlunos como default.
+  maxAlunos     Int?
   status        String      @default("aberta")
   local         String?
   criadoEm      DateTime    @default(now())

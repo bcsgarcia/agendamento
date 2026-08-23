@@ -75,7 +75,8 @@ export default async function AulaDetalhePage({ params }: { params: { id: string
   }));
 
   const inscricoesAtivas = rows.filter((r) => r.statusPagamento !== 'cancelado').length;
-  const max = aula.course.maxAlunos;
+  // Aula.maxAlunos (override opcional) tem precedência sobre Course.maxAlunos (default).
+  const max = aula.maxAlunos ?? aula.course.maxAlunos;
 
   return (
     <main className="p-8 max-w-6xl mx-auto">
@@ -133,7 +134,8 @@ export default async function AulaDetalhePage({ params }: { params: { id: string
               dataInicio: toLocal(aula.dataInicio),
               dataFim: toLocal(aula.dataFim),
               local: aula.local ?? '',
-              maxAlunos: aula.course.maxAlunos,
+              maxAlunos: aula.maxAlunos,
+              maxAlunosDefault: aula.course.maxAlunos,
               status: aula.status,
             }}
             redirectPath="/admin/aulas/{id}"

@@ -70,7 +70,8 @@ export default async function CursoDetalhePage({ params }: { params: { id: strin
     dataFim: a.dataFim,
     local: a.local,
     vagasOcupadas: a.vagasOcupadas,
-    maxAlunos: curso.maxAlunos,
+    // Aula.maxAlunos sobrepõe o default do curso quando preenchido.
+    maxAlunos: a.maxAlunos ?? curso.maxAlunos,
     status: a.status,
   }));
 

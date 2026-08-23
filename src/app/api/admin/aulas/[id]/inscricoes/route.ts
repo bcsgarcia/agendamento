@@ -30,7 +30,7 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } }) {
   // Verifica aula existe e não está cancelada/concluída
   const aula = await prisma.aula.findUnique({
     where: { id: aulaId },
-    select: { id: true, status: true, course: { select: { maxAlunos: true } } },
+    select: { id: true, status: true, maxAlunos: true, course: { select: { maxAlunos: true } } },
   });
   if (!aula) {
     return NextResponse.json({ error: 'aula não encontrada' }, { status: 404 });
@@ -39,12 +39,14 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } }) {
     return NextResponse.json({ error: `não é possível inscrever em aula ${aula.status}` }, { status: 409 });
   }
 
-  // Se já tem maxAlunos e vagasOcupadas >= max → lotada
-  if (aula.course.maxAlunos) {
+  // Limite efetivo: override da aula sobrepõe default do curso.
+  const limiteEfetivo = aula.maxAlunos ?? aula.course.maxAlunos;
+  // Se já tem limite e vagasOcupadas >= max → lotada
+  if (limiteEfetivo != null) {
     const lotacao = await prisma.inscricao.count({
       where: { aulaId, statusPagamento: { not: 'cancelado' } },
     });
-    if (lotacao >= aula.course.maxAlunos) {
+    if (lotacao >= limiteEfetivo) {
       return NextResponse.json({ error: 'aula lotada' }, { status: 409 });
     }
   }

@@ -16,6 +16,8 @@ export type AulaFormValues = {
   dataFim: string;
   local: string;
   maxAlunos: number | null;
+  /** Limite herdado do Course. Usado como placeholder/hint quando Aula.maxAlunos é null. */
+  maxAlunosDefault: number | null;
   status: string;
 };
 
@@ -113,10 +115,16 @@ export function AulaForm({
             name="maxAlunos"
             min="1"
             defaultValue={defaultValues.maxAlunos ?? ''}
-            placeholder="(vazio = usa max do curso)"
+            placeholder={
+              defaultValues.maxAlunosDefault != null
+                ? `Padrão do curso: ${defaultValues.maxAlunosDefault}`
+                : 'Sem limite definido'
+            }
             className={inputClass}
           />
-          <p className={hintClass}>Vagas ocupadas são calculadas das inscrições ativas.</p>
+          <p className={hintClass}>
+            Vazio = segue o padrão do curso. Preencha pra aumentar vagas nesta aula específica.
+          </p>
         </div>
         <div>
           <label className={labelClass}>Status</label>

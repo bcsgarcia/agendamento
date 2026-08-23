@@ -221,6 +221,7 @@ export async function createAulaAction(formData: FormData): Promise<{ ok: boolea
         dataInicio,
         dataFim,
         local: local || null,
+        maxAlunos,
         status,
       },
     });
@@ -248,6 +249,7 @@ export async function updateAulaAction(formData: FormData): Promise<{ ok: boolea
   const dataFimStr = String(formData.get('dataFim') ?? '').trim();
   const local = String(formData.get('local') ?? '').trim();
   const status = String(formData.get('status') ?? '').trim();
+  const maxAlunosStr = String(formData.get('maxAlunos') ?? '').trim();
 
   if (dataInicioStr) {
     const d = new Date(dataInicioStr);
@@ -261,6 +263,14 @@ export async function updateAulaAction(formData: FormData): Promise<{ ok: boolea
   }
   if (data.dataInicio && data.dataFim && (data.dataFim as Date) < (data.dataInicio as Date)) {
     return { ok: false, error: 'data fim deve ser >= data início' };
+  }
+  // maxAlunos: vazio = sobrescreve pra NULL (volta ao default do curso)
+  if (maxAlunosStr === '') {
+    data.maxAlunos = null;
+  } else {
+    const n = parseInt(maxAlunosStr, 10);
+    if (isNaN(n) || n <= 0) return { ok: false, error: 'max alunos inválido' };
+    data.maxAlunos = n;
   }
   data.local = local || null;
   if (status) data.status = status;
@@ -345,7 +355,7 @@ export async function createInscricaoAction(formData: FormData): Promise<{ ok: b
   // Verifica aula existe e não está cancelada/concluída
   const aula = await prisma.aula.findUnique({
     where: { id: aulaId },
-    select: { id: true, status: true, course: { select: { maxAlunos: true } } },
+    select: { id: true, status: true, maxAlunos: true, course: { select: { maxAlunos: true } } },
   });
   if (!aula) return { ok: false, error: 'aula não encontrada' };
   if (aula.status === 'cancelada' || aula.status === 'concluida') {

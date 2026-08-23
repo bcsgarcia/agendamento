@@ -74,7 +74,7 @@ export function ConfirmForm({
         >
           {pending ? 'Aguarde…' : confirmText}
         </button>
-        <span className="text-xs text-gray-500 ml-2">{cancelText}</span>
+        <span className="text-xs text-text-muted ml-2">{cancelText}</span>
       </form>
 
       <ConfirmDialog

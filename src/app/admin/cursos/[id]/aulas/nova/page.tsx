@@ -23,11 +23,11 @@ export default async function NovaAulaPage({ params }: { params: { id: string } 
 
   return (
     <main className="p-8 max-w-2xl mx-auto">
-      <a href={`/admin/cursos/${curso.id}`} className="text-sm text-blue-600">
+      <a href={`/admin/cursos/${curso.id}`} className="text-sm text-accent hover:underline">
         ← Voltar para {curso.name}
       </a>
       <h1 className="text-3xl font-bold mt-2 mb-2">Nova aula</h1>
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-text-muted mb-6">
         Curso: <strong>{curso.name}</strong>
         {curso.maxAlunos && <> · max alunos: {curso.maxAlunos}</>}
       </p>

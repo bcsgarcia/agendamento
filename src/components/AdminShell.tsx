@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/components/ui/cn';
 import { Pill } from '@/components/ui/Pill';
+import { ToastProvider } from '@/components/ui/Toast';
 
 /**
  * Item de navegação da sidebar.
@@ -292,7 +293,9 @@ export function AdminShell({ userName, userInitials, children }: AdminShellProps
         </header>
 
         {/* Page content */}
-        <main className="flex-1 px-8 py-7 pb-10 overflow-x-hidden">{children}</main>
+        <main className="flex-1 px-8 py-7 pb-10 overflow-x-hidden">
+          <ToastProvider>{children}</ToastProvider>
+        </main>
       </div>
     </div>
   );

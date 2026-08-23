@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import { prisma } from '@/lib/db';
 import { formatBRL } from '@/lib/helpers';
+import { Pill } from '@/components/ui/Pill';
+import { Check, X as XIcon } from 'lucide-react';
 
 export default async function ServicosPage() {
   const services = await prisma.service.findMany({ orderBy: { name: 'asc' } });
@@ -18,7 +20,19 @@ export default async function ServicosPage() {
               <span className="text-sm font-mono text-gray-600">{formatBRL(s.priceCents)}</span>
             </div>
             <p className="text-sm text-gray-600 mb-2">{s.description}</p>
-            <div className="text-xs text-gray-500">Duração: {s.durationMin} min · slug: <code>{s.slug}</code> · {s.active ? '✅ ativo' : '❌ inativo'}</div>
+            <div className="text-xs text-gray-500 flex items-center gap-2">
+              <span>Duração: {s.durationMin} min</span>
+              <span aria-hidden="true">·</span>
+              <span>slug: <code>{s.slug}</code></span>
+              <Pill
+                variant={s.active ? 'active' : 'inactive'}
+                icon={s.active
+                  ? <Check className="w-3 h-3" strokeWidth={2.5} aria-hidden="true" />
+                  : <XIcon className="w-3 h-3" strokeWidth={2.5} aria-hidden="true" />}
+              >
+                {s.active ? 'Ativo' : 'Inativo'}
+              </Pill>
+            </div>
           </div>
         ))}
       </div>

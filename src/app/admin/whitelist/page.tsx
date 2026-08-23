@@ -1,16 +1,24 @@
-function countryFlag(phone: string): string {
-  // Detecta país pelo DDI
-  if (phone.startsWith('55')) return '🇧🇷';
-  if (phone.startsWith('351')) return '🇵🇹';
-  if (phone.startsWith('1')) return '🇺🇸';
-  if (phone.startsWith('44')) return '🇬🇧';
-  if (phone.startsWith('34')) return '🇪🇸';
-  if (phone.startsWith('33')) return '🇫🇷';
-  if (phone.startsWith('49')) return '🇩🇪';
-  if (phone.startsWith('54')) return '🇦🇷';
-  if (phone.startsWith('351')) return '🇵🇹';
-  if (phone.startsWith('52')) return '🇲🇽';
-  return '🌍';
+// Mapeia DDI do telefone → código ISO do país (BR, PT, US, etc.).
+// Usado como badge neutro ao lado de cada número da whitelist.
+// ORDEM IMPORTA: DDIs mais longos devem vir antes (ex: 351 antes de 3/3),
+// porque startsWith para no primeiro match. Ajustado pra evitar falsos positivos.
+const COUNTRY_BY_DDI: Array<{ ddi: string; code: string }> = [
+  { ddi: '55', code: 'BR' },
+  { ddi: '351', code: 'PT' },
+  { ddi: '44', code: 'GB' },
+  { ddi: '34', code: 'ES' },
+  { ddi: '33', code: 'FR' },
+  { ddi: '49', code: 'DE' },
+  { ddi: '54', code: 'AR' },
+  { ddi: '52', code: 'MX' },
+  { ddi: '1', code: 'US' },
+];
+
+function countryCode(phone: string): string {
+  for (const { ddi, code } of COUNTRY_BY_DDI) {
+    if (phone.startsWith(ddi)) return code;
+  }
+  return '??';
 }
 
 export const dynamic = 'force-dynamic';
@@ -64,9 +72,9 @@ export default async function WhitelistPage({ searchParams }: { searchParams: { 
             />
             <p className="text-xs text-gray-500 mt-1">
               Apenas dígitos, com DDI. Exemplos:{' '}
-              <span className="font-mono">5511912345678</span> 🇧🇷 ·{' '}
-              <span className="font-mono">351912345678</span> 🇵🇹 ·{' '}
-              <span className="font-mono">14155552671</span> 🇺🇸
+              <span className="font-mono">5511912345678</span> (BR) ·{' '}
+              <span className="font-mono">351912345678</span> (PT) ·{' '}
+              <span className="font-mono">14155552671</span> (US)
             </p>
           </div>
           <button
@@ -89,7 +97,12 @@ export default async function WhitelistPage({ searchParams }: { searchParams: { 
             <div key={entry.id} className="p-4 flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg" title={entry.phone}>{countryFlag(entry.phone)}</span>
+                  <span
+                    className="inline-flex items-center justify-center min-w-[2.25rem] px-2 py-0.5 rounded-md text-label font-mono font-semibold bg-pill-inactive text-text-muted"
+                    title={entry.phone}
+                  >
+                    {countryCode(entry.phone)}
+                  </span>
                   <code className="font-mono text-sm font-semibold bg-gray-100 px-2 py-1 rounded">
                     {entry.phone}
                   </code>

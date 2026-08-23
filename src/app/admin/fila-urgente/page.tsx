@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import { prisma } from '@/lib/db';
+import { Sparkles } from 'lucide-react';
 
 export default async function UrgentesPage() {
   const urgent = await prisma.urgentQueue.findMany({
@@ -23,7 +24,12 @@ export default async function UrgentesPage() {
             <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono">{u.contextSnapshot}</pre>
           </div>
         ))}
-        {urgent.length === 0 && <p className="text-gray-500">✨ Nenhuma urgência pendente.</p>}
+        {urgent.length === 0 && (
+          <p className="text-gray-500 inline-flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4" strokeWidth={2} aria-hidden="true" />
+            Nenhuma urgência pendente.
+          </p>
+        )}
       </div>
     </main>
   );

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import { prisma } from '@/lib/db';
+import { AlertTriangle } from 'lucide-react';
 
 export default async function ClientesPage() {
   const customers = await prisma.customer.findMany({
@@ -20,7 +21,12 @@ export default async function ClientesPage() {
               <div>
                 <div className="font-medium">{c.name || 'Sem nome'}</div>
                 <div className="text-sm text-gray-500 font-mono">{c.phone}</div>
-                {c.allergies && <div className="text-xs text-red-600 mt-1">⚠ {c.allergies}</div>}
+                {c.allergies && (
+                  <div className="text-xs text-red-600 mt-1 inline-flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" strokeWidth={2} aria-hidden="true" />
+                    {c.allergies}
+                  </div>
+                )}
                 {c.tags.length > 0 && <div className="text-xs text-blue-600 mt-1">{c.tags.join(', ')}</div>}
               </div>
               <div className="text-xs text-gray-500">{c.bookings.length} booking(s)</div>

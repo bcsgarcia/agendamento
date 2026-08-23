@@ -17,18 +17,21 @@ export async function login(email: string, password: string): Promise<boolean> {
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return false;
 
-  const sessionToken = crypto.randomBytes(32).toString('hex');
+  // Cookie guarda o HASH (não o raw). DB também guarda o hash → compare direto
+  // em getCurrentUser/requireUser/logout sem re-hashear. rawToken nunca é exposto.
+  const hashedToken = hashToken(crypto.randomBytes(32).toString('hex'));
   const expires = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
 
   await prisma.session.create({
     data: {
       userId: user.id,
-      sessionToken: hashToken(sessionToken),
+      sessionToken: hashedToken,
       expires,
     },
   });
 
-  cookies().set(SESSION_COOKIE, sessionToken, {
+  // Cookie guarda o HASH (mesmo valor que vai pra DB). Compare direto nas leituras.
+  cookies().set(SESSION_COOKIE, hashedToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -43,7 +46,8 @@ export async function login(email: string, password: string): Promise<boolean> {
 export async function logout(): Promise<void> {
   const token = cookies().get(SESSION_COOKIE)?.value;
   if (token) {
-    await prisma.session.deleteMany({ where: { sessionToken: hashToken(token) } }).catch(() => {});
+    // O cookie agora guarda o hash diretamente, sem necessidade de re-hashear.
+    await prisma.session.deleteMany({ where: { sessionToken: token } }).catch(() => {});
   }
   cookies().delete(SESSION_COOKIE);
 }
@@ -54,7 +58,7 @@ export async function getCurrentUser(): Promise<{ id: string; email: string; nam
   if (!token) return null;
 
   const session = await prisma.session.findUnique({
-    where: { sessionToken: hashToken(token) },
+    where: { sessionToken: token },
     include: { user: true },
   });
 

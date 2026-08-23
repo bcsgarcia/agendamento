@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { GraduationCap } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { AdminTable } from '@/components/AdminTable';
+import { NovaAulaDropdown } from './NovaAulaDropdown';
 
 // Status de aula → classe semântica (mesmo padrão do /admin/cursos/[id]).
 const AULA_STATUS_CLASS: Record<string, string> = {
@@ -40,11 +41,20 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function AulasPage() {
-  // Busca TODAS as aulas de TODOS os cursos, ordenadas pela mais recente.
-  const aulas = await prisma.aula.findMany({
-    orderBy: [{ dataInicio: 'desc' }],
-    include: { course: { select: { id: true, name: true, maxAlunos: true } } },
-  });
+  // Busca TODAS as aulas de TODOS os cursos + cursos ativos (pra dropdown
+  // "+ Nova aula" — criar aula exige courseId, então o user escolhe o curso
+  // antes de cair no /admin/cursos/[id]/aulas/nova).
+  const [aulas, cursos] = await Promise.all([
+    prisma.aula.findMany({
+      orderBy: [{ dataInicio: 'desc' }],
+      include: { course: { select: { id: true, name: true, maxAlunos: true } } },
+    }),
+    prisma.course.findMany({
+      where: { active: true },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
+  ]);
 
   const rows: AulaRow[] = aulas.map((a) => ({
     id: a.id,
@@ -84,6 +94,9 @@ export default async function AulasPage() {
       <AdminTable<AulaRow>
         rows={rows}
         rowKey={(r) => r.id}
+        // Dropdown "+ Nova aula" aparece no header E no empty state
+        // (AdminTable repassa `actions` pra EmptyState automaticamente).
+        actions={<NovaAulaDropdown cursos={cursos} />}
         emptyMessage="Nenhuma aula cadastrada ainda. Crie aulas a partir de um curso existente."
         columns={[
           {

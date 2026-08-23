@@ -1,8 +1,8 @@
 // Schemas Zod pra validação dos endpoints de Curso/Aula/Inscricao
 import { z } from 'zod';
 
-// Status permitidos
-export const COURSE_STATUS = ['aberta', 'lotada', 'cancelada', 'concluida'] as const;
+// Status permitidos (por entidade)
+export const AULA_STATUS = ['aberta', 'lotada', 'cancelada', 'concluida'] as const;
 export const PAGAMENTO_STATUS = ['pendente', 'sinal_pago', 'quitado', 'cancelado'] as const;
 
 // Helper pra campos opcionais em PATCH (permite undefined e null)
@@ -34,14 +34,14 @@ export const AulaCreateSchema = z.object({
   dataInicio: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)),
   dataFim: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)),
   local: z.string().max(200).nullable().optional(),
-  status: z.enum(COURSE_STATUS).optional(),
+  status: z.enum(AULA_STATUS).optional(),
 });
 
 export const AulaUpdateSchema = z.object({
   dataInicio: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)).optional(),
   dataFim: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)).optional(),
   local: z.string().max(200).nullable().optional(),
-  status: z.enum(COURSE_STATUS).optional(),
+  status: z.enum(AULA_STATUS).optional(),
 }).refine(
   (data) => Object.keys(data).length > 0,
   { message: 'patch precisa de pelo menos 1 campo' }

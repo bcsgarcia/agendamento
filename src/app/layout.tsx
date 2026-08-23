@@ -1,7 +1,15 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 export const metadata: Metadata = { title: 'Agendamento — Clínica' };
 
@@ -9,8 +17,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await getCurrentUser();
 
   return (
-    <html lang="pt-BR">
-      <body>
+    <html lang="pt-BR" className={inter.variable}>
+      <body className={inter.className}>
         {user && (
           <nav className="bg-white border-b px-8 py-3 flex gap-6 text-sm items-center">
             <Link href="/admin" className="font-semibold">🏥 Clínica</Link>

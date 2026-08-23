@@ -34,6 +34,8 @@ export const AulaCreateSchema = z.object({
   dataInicio: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)),
   dataFim: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)),
   local: z.string().max(200).nullable().optional(),
+  // Override opcional do limite de vagas (null = usa default do curso).
+  maxAlunos: z.number().int().positive().nullable().optional(),
   status: z.enum(AULA_STATUS).optional(),
 });
 
@@ -41,6 +43,8 @@ export const AulaUpdateSchema = z.object({
   dataInicio: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)).optional(),
   dataFim: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)).optional(),
   local: z.string().max(200).nullable().optional(),
+  // Override opcional do limite (null = volta ao default do curso).
+  maxAlunos: z.number().int().positive().nullable().optional(),
   status: z.enum(AULA_STATUS).optional(),
 }).refine(
   (data) => Object.keys(data).length > 0,

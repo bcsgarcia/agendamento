@@ -45,6 +45,7 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } }) {
         dataInicio: new Date(parsed.data.dataInicio),
         dataFim: new Date(parsed.data.dataFim),
         local: parsed.data.local ?? null,
+        maxAlunos: parsed.data.maxAlunos ?? null,
         status: parsed.data.status ?? 'aberta',
       },
     });

@@ -37,7 +37,8 @@ export default async function NovaAulaPage({ params }: { params: { id: string } 
         defaultValues={{
           dataInicio: toLocal(defaultInicio),
           dataFim: toLocal(defaultFim),
-          maxAlunos: curso.maxAlunos,
+          maxAlunos: null,
+          maxAlunosDefault: curso.maxAlunos,
           local: '',
           status: 'aberta',
         }}

@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
             dataInicio: true,
             dataFim: true,
             vagasOcupadas: true,
+            maxAlunos: true,
             status: true,
             local: true,
           },
@@ -53,10 +54,14 @@ export async function GET(req: NextRequest) {
       count: courses.length,
       courses: courses.map((c) => ({
         ...c,
-        aulas: c.aulas.map((a) => ({
-          ...a,
-          vagasDisponiveis: c.maxAlunos != null ? Math.max(0, c.maxAlunos - a.vagasOcupadas) : null,
-        })),
+        aulas: c.aulas.map((a) => {
+          // Aula.maxAlunos (override) sobrepõe Course.maxAlunos (default).
+          const limiteEfetivo = a.maxAlunos ?? c.maxAlunos;
+          return {
+            ...a,
+            vagasDisponiveis: limiteEfetivo != null ? Math.max(0, limiteEfetivo - a.vagasOcupadas) : null,
+          };
+        }),
       })),
     });
   } catch (e) {

@@ -52,7 +52,8 @@ export default async function AulasPage() {
     dataFim: a.dataFim,
     status: a.status,
     vagasOcupadas: a.vagasOcupadas,
-    maxAlunos: a.course.maxAlunos,
+    // Aula.maxAlunos (override) tem precedência sobre Course.maxAlunos (default).
+    maxAlunos: a.maxAlunos ?? a.course.maxAlunos,
     local: a.local,
     courseId: a.courseId,
     courseName: a.course.name,

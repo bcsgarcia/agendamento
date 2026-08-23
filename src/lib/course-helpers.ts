@@ -1,6 +1,7 @@
 // Helper: recalcula vagasOcupadas de uma Aula contando Inscricoes ativas (não canceladas).
 // Chamado após qualquer create/update/delete de Inscricao.
-// Também recalcula status da aula: se vagasOcupadas >= maxAlunos (do curso) => 'lotada'.
+// Também recalcula status da aula: se vagasOcupadas >= maxAlunos efetivo (override da aula
+// ou default do curso) => 'lotada'.
 import { prisma } from './db';
 
 const STATUS_PAGAMENTO_ATIVOS = ['pendente', 'sinal_pago', 'quitado'];
@@ -19,12 +20,15 @@ export async function recalcAulaVagas(aulaId: string): Promise<{ vagasOcupadas: 
     },
   });
 
+  // Limite efetivo: Aula.maxAlunos (override) sobrepõe Course.maxAlunos (default).
+  const limiteEfetivo = aula.maxAlunos ?? aula.course.maxAlunos;
+
   // Determina status automaticamente (apenas se aula ainda não foi cancelada/concluída manualmente)
   let novoStatus = aula.status;
   if (aula.status === 'aberta' || aula.status === 'lotada') {
-    if (aula.course.maxAlunos && count >= aula.course.maxAlunos) {
+    if (limiteEfetivo != null && count >= limiteEfetivo) {
       novoStatus = 'lotada';
-    } else if (aula.status === 'lotada' && count < (aula.course.maxAlunos ?? Infinity)) {
+    } else if (aula.status === 'lotada' && (limiteEfetivo == null || count < limiteEfetivo)) {
       novoStatus = 'aberta';
     }
   }

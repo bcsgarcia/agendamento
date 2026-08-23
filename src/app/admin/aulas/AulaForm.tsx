@@ -2,7 +2,14 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createAulaAction, updateAulaAction } from '@/lib/course-actions';
-import { SubmitButton, CancelLink, FormError } from '@/components/AdminForm';
+import {
+  SubmitButton,
+  CancelLink,
+  FormError,
+  inputClass,
+  labelClass,
+  hintClass,
+} from '@/components/AdminForm';
 
 export type AulaFormValues = {
   dataInicio: string;
@@ -65,69 +72,65 @@ export function AulaForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Data/hora início *</label>
+          <label className={labelClass}>Data/hora início *</label>
           <input
             type="datetime-local"
             name="dataInicio"
             required
             defaultValue={defaultValues.dataInicio}
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Data/hora fim *</label>
+          <label className={labelClass}>Data/hora fim *</label>
           <input
             type="datetime-local"
             name="dataFim"
             required
             defaultValue={defaultValues.dataFim}
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Local</label>
+        <label className={labelClass}>Local</label>
         <input
           type="text"
           name="local"
           maxLength={200}
           defaultValue={defaultValues.local}
           placeholder="Ex: Clínica — sala 2, ou Online via Zoom"
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Max alunos</label>
+          <label className={labelClass}>Max alunos</label>
           <input
             type="number"
             name="maxAlunos"
             min="1"
             defaultValue={defaultValues.maxAlunos ?? ''}
             placeholder="(vazio = usa max do curso)"
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
-          <p className="text-xs text-gray-500 mt-1">Vagas ocupadas são calculadas das inscrições ativas.</p>
+          <p className={hintClass}>Vagas ocupadas são calculadas das inscrições ativas.</p>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Status</label>
-          <select
-            name="status"
-            defaultValue={defaultValues.status}
-            className="w-full border rounded-lg px-3 py-2 text-sm"
-          >
+          <label className={labelClass}>Status</label>
+          <select name="status" defaultValue={defaultValues.status} className={inputClass}>
             <option value="aberta">Aberta</option>
             <option value="lotada">Lotada</option>
             <option value="concluida">Concluída</option>
             <option value="cancelada">Cancelada</option>
           </select>
-          <p className="text-xs text-gray-500 mt-1">Muda p/ "lotada" automaticamente ao lotar.</p>
+          <p className={hintClass}>Muda p/ "lotada" automaticamente ao lotar.</p>
         </div>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t">
+      <div className="flex gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton
           label={mode === 'create' ? 'Criar aula' : 'Salvar alterações'}
           pending={pending}

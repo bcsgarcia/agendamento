@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { CursoForm } from '../../CursoForm';
@@ -10,10 +11,13 @@ export default async function CursoEditarPage({ params }: { params: { id: string
 
   return (
     <main className="p-8 max-w-4xl mx-auto">
-      <a href={`/admin/cursos/${curso.id}`} className="text-sm text-blue-600">
+      <Link
+        href={`/admin/cursos/${curso.id}`}
+        className="text-label text-text-muted hover:text-accent transition-colors duration-150"
+      >
         ← Voltar para {curso.name}
-      </a>
-      <h1 className="text-3xl font-bold mt-2 mb-6">Editar curso</h1>
+      </Link>
+      <h1 className="text-h1 text-text font-semibold mt-2 mb-6">Editar curso</h1>
       <CursoForm
         mode="edit"
         initial={{

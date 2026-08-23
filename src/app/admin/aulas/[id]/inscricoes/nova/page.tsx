@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { InscricaoForm } from './InscricaoForm';
@@ -13,12 +14,15 @@ export default async function NovaInscricaoPage({ params }: { params: { id: stri
 
   return (
     <main className="p-8 max-w-2xl mx-auto">
-      <a href={`/admin/aulas/${aula.id}`} className="text-sm text-blue-600">
+      <Link
+        href={`/admin/aulas/${aula.id}`}
+        className="text-label text-text-muted hover:text-accent transition-colors duration-150"
+      >
         ← Voltar para a aula
-      </a>
-      <h1 className="text-3xl font-bold mt-2 mb-2">Adicionar inscrito</h1>
-      <p className="text-sm text-gray-600 mb-6">
-        <strong>{aula.course.name}</strong> ·{' '}
+      </Link>
+      <h1 className="text-h1 text-text font-semibold mt-2 mb-2">Adicionar inscrito</h1>
+      <p className="text-body text-text-muted mb-6">
+        <strong className="text-text">{aula.course.name}</strong> ·{' '}
         {new Date(aula.dataInicio).toLocaleDateString('pt-BR', {
           day: '2-digit',
           month: 'short',

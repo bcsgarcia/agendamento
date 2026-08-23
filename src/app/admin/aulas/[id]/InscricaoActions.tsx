@@ -50,7 +50,7 @@ export function InscricaoActions({ id, currentStatus }: { id: string; currentSta
           value={status}
           disabled={pending}
           onChange={(e) => updateStatus(e.target.value)}
-          className="text-xs border rounded px-1 py-0.5"
+          className="text-caption border border-border-subtle bg-card text-text rounded px-1.5 py-0.5 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
         >
           {STATUSES.map((s) => (
             <option key={s} value={s}>
@@ -61,11 +61,11 @@ export function InscricaoActions({ id, currentStatus }: { id: string; currentSta
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="text-xs text-gray-500 underline"
+          className="text-caption text-text-muted hover:text-accent underline transition-colors duration-150"
         >
           fechar
         </button>
-        {error && <span className="text-xs text-red-600">{error}</span>}
+        {error && <span className="text-caption text-danger">{error}</span>}
       </div>
     );
   }
@@ -76,7 +76,7 @@ export function InscricaoActions({ id, currentStatus }: { id: string; currentSta
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="text-xs px-2 py-1 border rounded hover:bg-gray-50"
+          className="text-label px-2 py-1 border border-border-subtle bg-card text-text rounded-card hover:bg-card-elevated transition-colors duration-150"
         >
           Status
         </button>
@@ -84,12 +84,12 @@ export function InscricaoActions({ id, currentStatus }: { id: string; currentSta
           type="button"
           onClick={remove}
           disabled={pending}
-          className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50 disabled:opacity-50"
+          className="text-label px-2 py-1 border border-danger/40 text-danger rounded-card hover:bg-danger/10 disabled:opacity-50 transition-colors duration-150"
         >
           Remover
         </button>
       </div>
-      {error && <span className="text-xs text-red-600">{error}</span>}
+      {error && <span className="text-caption text-danger">{error}</span>}
     </div>
   );
 }

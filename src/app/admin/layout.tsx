@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { AdminShell } from '@/components/AdminShell';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -12,6 +13,17 @@ function initialsFromName(name: string | null | undefined, email: string): strin
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // /admin/login precisa rodar SEM AdminShell (sidebar + topbar).
+  // middleware propaga o pathname via header x-pathname pra Server Components
+  // conseguirem detectar sem precisar de hooks client-side.
+  const pathname = headers().get('x-pathname') ?? '';
+  const isLoginRoute =
+    pathname === '/admin/login' || pathname.startsWith('/admin/login?');
+
+  if (isLoginRoute) {
+    return <>{children}</>;
+  }
+
   const user = await getCurrentUser();
 
   // Auth é enforced pelo middleware (src/middleware.ts) — sem cookie, request nunca chega aqui.

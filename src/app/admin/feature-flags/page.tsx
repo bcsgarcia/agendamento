@@ -1,76 +1,113 @@
+import Link from 'next/link';
+import { Flag, Info } from 'lucide-react';
+import { prisma } from '@/lib/db';
+import { Card } from '@/components/ui/Card';
+import { Pill } from '@/components/ui/Pill';
+import { FeatureFlagRow } from './FeatureFlagRow';
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-import { prisma } from '@/lib/db';
+
+/** Seeds — garante que todas as flags padrão existam antes de renderizar. */
+const DEFAULT_FLAGS = [
+  {
+    nome: 'whitelist_enabled',
+    descricao:
+      'Filtro de números autorizados (ignora silenciosamente quem não tá na whitelist)',
+  },
+  {
+    nome: 'ai_ativa',
+    descricao: 'Se falso, bot responde com mensagem padrão sem chamar LLM',
+  },
+  {
+    nome: 'modo_debug',
+    descricao: 'Logs verbosos no Fluxi (debug de mensagens)',
+  },
+  {
+    nome: 'manutencao',
+    descricao: 'Bot responde com "em manutenção" pra qualquer msg',
+  },
+] as const;
 
 export default async function FeatureFlagsPage() {
-  const flags = await prisma.featureFlag.findMany({ orderBy: { nome: 'asc' } });
-
-  // Seeds: garante flags padrão
-  const defaults = [
-    { nome: 'whitelist_enabled', descricao: 'Filtro de números autorizados (ignora silenciosamente quem não tá na whitelist)' },
-    { nome: 'ai_ativa', descricao: 'Se falso, bot responde com mensagem padrão sem chamar LLM' },
-    { nome: 'modo_debug', descricao: 'Logs verbosos no Fluxi (debug de mensagens)' },
-    { nome: 'manutencao', descricao: 'Bot responde com "em manutenção" pra qualquer msg' }
-  ];
-  for (const d of defaults) {
-    if (!flags.find(f => f.nome === d.nome)) {
-      await prisma.featureFlag.create({
-        data: { nome: d.nome, ativo: false, descricao: d.descricao }
-      }).catch(() => {});
-    }
+  // 1. Garante que as flags padrão existem (idempotente — catch em falha de race).
+  for (const d of DEFAULT_FLAGS) {
+    await prisma.featureFlag
+      .create({
+        data: { nome: d.nome, ativo: false, descricao: d.descricao },
+      })
+      .catch(() => {
+        /* já existe — ok */
+      });
   }
-  const allFlags = await prisma.featureFlag.findMany({ orderBy: { nome: 'asc' } });
+
+  // 2. Busca estado canônico para renderizar.
+  const allFlags = await prisma.featureFlag.findMany({
+    orderBy: { nome: 'asc' },
+  });
+
+  const activeCount = allFlags.filter((f) => f.ativo).length;
 
   return (
-    <main className="p-8 max-w-4xl mx-auto">
-      <a href="/admin" className="text-sm text-blue-600">← Voltar</a>
-      <h1 className="text-3xl font-bold mt-2 mb-2">Feature Flags</h1>
-      <p className="text-gray-600 mb-6">Liga/desliga funcionalidades em tempo real (sem deploy). Cada toggle salva ao clicar — efeito em ~5 segundos (cache).</p>
-
-      <div className="bg-white border rounded-lg divide-y">
-        {allFlags.map(f => (
-          <div key={f.id} className="p-4 flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <code className="font-mono text-sm font-semibold bg-gray-100 px-2 py-1 rounded">{f.nome}</code>
-                {f.ativo ? (
-                  <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">ATIVO</span>
-                ) : (
-                  <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">desligado</span>
-                )}
-              </div>
-              {f.descricao && <p className="text-sm text-gray-600 mt-1">{f.descricao}</p>}
-              <p className="text-xs text-gray-400 mt-1">
-                Última atualização: {new Date(f.atualizadoEm).toLocaleString('pt-BR')}
-              </p>
-            </div>
-            <ToggleSwitch nome={f.nome} ativo={f.ativo} />
-          </div>
-        ))}
-      </div>
-    </main>
-  );
-}
-
-// Toggle visual (Client Component) — usa form POST pra simplicidade
-function ToggleSwitch({ nome, ativo }: { nome: string; ativo: boolean }) {
-  return (
-    <div className="flex items-center gap-2">
-      <input type="hidden" name={`flag[${nome}]`} value={ativo ? '0' : '1'} />
-      <button
-        type="submit"
-        name={`toggle_${nome}`}
-        value={ativo ? 'off' : 'on'}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          ativo ? 'bg-green-500' : 'bg-gray-300'
-        }`}
+    <div className="max-w-4xl">
+      <Link
+        href="/admin"
+        className="text-label text-text-muted hover:text-accent transition-colors duration-150"
       >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-            ativo ? 'translate-x-6' : 'translate-x-1'
-          }`}
-        />
-      </button>
-    </div>
+        ← Voltar para dashboard
+      </Link>
+
+      <div className="flex items-center gap-3 mt-2 mb-2">
+        <Flag className="w-6 h-6 text-accent" strokeWidth={1.75} aria-hidden="true" />
+        <h1 className="text-h1 text-text font-semibold">Feature Flags</h1>
+        <Pill variant="inactive">
+          {activeCount} ativa{activeCount === 1 ? '' : 's'} · {allFlags.length} no total
+        </Pill>
+      </div>
+
+      <p className="text-body text-text-muted mb-6">
+        Liga/desliga funcionalidades em tempo real (sem deploy). Cada toggle salva ao
+        clicar — efeito em ~5 segundos (cache).
+      </p>
+
+      <Card>
+        <div className="flex items-start gap-2 px-5 py-3 border-b border-border-subtle bg-card-elevated rounded-t-card">
+          <Info
+            className="w-4 h-4 shrink-0 mt-0.5 text-text-muted"
+            strokeWidth={2}
+            aria-hidden="true"
+          />
+          <p className="text-caption text-text-muted">
+            Use com cuidado. Flags como <code className="font-mono text-accent">manutencao</code>{' '}
+            ou <code className="font-mono text-accent">ai_ativa=false</code> afetam o atendimento
+            dos clientes em tempo real.
+          </p>
+        </div>
+        {allFlags.length === 0 ? (
+          <div className="px-5 py-12 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-card bg-card-elevated border border-border-subtle flex items-center justify-center mb-3">
+              <Flag className="w-6 h-6 text-text-muted" strokeWidth={1.75} aria-hidden="true" />
+            </div>
+            <p className="text-body text-text-muted">
+              Nenhuma feature flag cadastrada.
+            </p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-border-subtle">
+            {allFlags.map((f) => (
+              <li key={f.id}>
+                <FeatureFlagRow
+                  id={f.id}
+                  nome={f.nome}
+                  ativo={f.ativo}
+                  descricao={f.descricao}
+                  atualizadoEm={f.atualizadoEm}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+  </div>
   );
 }

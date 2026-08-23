@@ -5,7 +5,14 @@ import {
   createCursoAction,
   updateCursoAction,
 } from '@/lib/course-actions';
-import { SubmitButton, CancelLink, FormError } from '@/components/AdminForm';
+import {
+  SubmitButton,
+  CancelLink,
+  FormError,
+  inputClass,
+  labelClass,
+  hintClass,
+} from '@/components/AdminForm';
 
 export type CursoFormValues = {
   id?: string;
@@ -80,19 +87,19 @@ export function CursoForm({
       {mode === 'edit' && <input type="hidden" name="id" value={initial?.id ?? ''} />}
 
       <div>
-        <label className="block text-sm font-medium mb-1">Nome *</label>
+        <label className={labelClass}>Nome *</label>
         <input
           type="text"
           name="name"
           required
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Slug *</label>
+        <label className={labelClass}>Slug *</label>
         <input
           type="text"
           name="slug"
@@ -100,17 +107,17 @@ export function CursoForm({
           value={slug}
           onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }}
           pattern="[a-z0-9-]+"
-          className="w-full border rounded-lg px-3 py-2 text-sm font-mono"
+          className={`${inputClass} font-mono`}
         />
-        <p className="text-xs text-gray-500 mt-1">Apenas letras minúsculas, números e hífen. Auto-gerado do nome — edite se quiser.</p>
+        <p className={hintClass}>Apenas letras minúsculas, números e hífen. Auto-gerado do nome — edite se quiser.</p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Modalidade</label>
+        <label className={labelClass}>Modalidade</label>
         <select
           name="modality"
           defaultValue={initial?.modality ?? 'presencial'}
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className={inputClass}
         >
           <option value="presencial">Presencial</option>
           <option value="online">Online</option>
@@ -119,39 +126,39 @@ export function CursoForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Descrição *</label>
+        <label className={labelClass}>Descrição *</label>
         <textarea
           name="description"
           required
           rows={4}
           defaultValue={initial?.description ?? ''}
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Carga horária (h)</label>
+          <label className={labelClass}>Carga horária (h)</label>
           <input
             type="number"
             name="cargaHorariaHoras"
             min="1"
             defaultValue={initial?.cargaHorariaHoras ?? ''}
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Max alunos</label>
+          <label className={labelClass}>Max alunos</label>
           <input
             type="number"
             name="maxAlunos"
             min="1"
             defaultValue={initial?.maxAlunos ?? ''}
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Preço (R$)</label>
+          <label className={labelClass}>Preço (R$)</label>
           <input
             type="text"
             name="price"
@@ -159,50 +166,50 @@ export function CursoForm({
             required
             defaultValue={priceInitial}
             placeholder="0,00"
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Forma de pagamento</label>
+        <label className={labelClass}>Forma de pagamento</label>
         <textarea
           name="formaPagamento"
           rows={3}
           defaultValue={initial?.formaPagamento ?? ''}
           placeholder="Ex: Pix com 10% off à vista, ou 3x no cartão"
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className={inputClass}
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className={hintClass}>
           Texto livre. Você pode colocar regras de parcelamento, descontos etc.
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Link de pagamento (URL)</label>
+        <label className={labelClass}>Link de pagamento (URL)</label>
         <input
           type="url"
           name="purchaseUrl"
           defaultValue={initial?.purchaseUrl ?? ''}
           placeholder="https://..."
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 pt-2">
         <input
           type="checkbox"
           name="active"
           id="active"
           defaultChecked={initial?.active ?? true}
-          className="rounded"
+          className="rounded border-border-subtle bg-card text-accent focus:ring-2 focus:ring-accent/30"
         />
-        <label htmlFor="active" className="text-sm">
+        <label htmlFor="active" className="text-body text-text">
           Curso ativo (visível na vitrine pública)
         </label>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t">
+      <div className="flex gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton
           label={mode === 'create' ? 'Criar curso' : 'Salvar alterações'}
           pending={pending}

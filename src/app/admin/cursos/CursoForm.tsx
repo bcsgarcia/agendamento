@@ -158,7 +158,7 @@ export function CursoForm({
           />
         </div>
         <div>
-          <label className={labelClass}>Preço (R$)</label>
+          <label className={labelClass}>Preço (€)</label>
           <input
             type="text"
             name="price"

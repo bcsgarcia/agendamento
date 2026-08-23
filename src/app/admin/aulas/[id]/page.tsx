@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronDown, Users, Check } from 'lucide-react';
 import { prisma } from '@/lib/db';
-import { formatBRL } from '@/lib/helpers';
+import { formatEUR } from '@/lib/helpers';
 import { AdminTable } from '@/components/AdminTable';
 import { AulaForm } from '../AulaForm';
 import { InscricaoActions } from './InscricaoActions';
@@ -177,7 +177,7 @@ export default async function AulaDetalhePage({ params }: { params: { id: string
             header: 'Pago',
             render: (r) =>
               r.valorPago != null ? (
-                <span className="font-mono text-body text-text">{formatBRL(r.valorPago)}</span>
+                <span className="font-mono text-body text-text">{formatEUR(r.valorPago)}</span>
               ) : (
                 <span className="text-text-muted">—</span>
               ),

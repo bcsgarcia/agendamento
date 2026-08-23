@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpen, GraduationCap, TrendingUp, Activity } from 'lucide-react';
 import { prisma } from '@/lib/db';
-import { formatBRL } from '@/lib/helpers';
+import { formatEUR } from '@/lib/helpers';
 import { AdminTable } from '@/components/AdminTable';
 import { Card, StatTile, Pill } from '@/components/ui';
 import { CancelAulaButton } from './CancelAulaButton';
@@ -127,7 +127,7 @@ export default async function CursoDetalhePage({ params }: { params: { id: strin
         />
         <StatTile
           label="Receita Estimada"
-          value={formatBRL(receitaEstimadaCents)}
+          value={formatEUR(receitaEstimadaCents)}
           icon={<TrendingUp className="w-5 h-5" />}
         />
         <StatTile
@@ -143,7 +143,7 @@ export default async function CursoDetalhePage({ params }: { params: { id: strin
         <dl className="grid grid-cols-1 md:grid-cols-3 gap-4 text-body">
           <div>
             <dt className="text-caption uppercase tracking-wide text-text-muted">Preço</dt>
-            <dd className="text-text font-mono mt-1">{formatBRL(curso.priceCents)}</dd>
+            <dd className="text-text font-mono mt-1">{formatEUR(curso.priceCents)}</dd>
           </div>
           <div>
             <dt className="text-caption uppercase tracking-wide text-text-muted">Carga horária</dt>

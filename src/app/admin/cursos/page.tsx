@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { formatBRL } from '@/lib/helpers';
+import { formatEUR } from '@/lib/helpers';
 import { AdminTable } from '@/components/AdminTable';
 import { Pill } from '@/components/ui/Pill';
 import { DeactivateCursoButton } from './DeactivateCursoButton';
@@ -89,7 +89,7 @@ export default async function CursosPage() {
           {
             key: 'price',
             header: 'Preço',
-            render: (r) => formatBRL(r.priceCents),
+            render: (r) => formatEUR(r.priceCents),
           },
           {
             key: 'aulas',

@@ -2,7 +2,7 @@
 
 // Form de Serviço reutilizável (criar/editar). Mesma shape de UX do CursoForm:
 // tokens Dark Violet, SubmitButton/CancelLink/FormError compartilhados,
-// preço em reais no input → cents na action via parseFloat + Math.round.
+// preço em euros no input → cents na action via parseFloat + Math.round.
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -143,7 +143,7 @@ export function ServicoForm({ initial, mode, redirectPath }: Props) {
           />
         </div>
         <div>
-          <label className={labelClass}>Preço (R$)</label>
+          <label className={labelClass}>Preço (€)</label>
           <input
             type="text"
             name="price"

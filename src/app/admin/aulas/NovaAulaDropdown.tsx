@@ -10,7 +10,7 @@ type CursoOption = {
 };
 
 /**
- * Dropdown "+ Nova aula" — usado no header da página `/admin/aulas`.
+ * Dropdown "Adicionar aula" — usado no header da página `/admin/aulas`.
  *
  * Como a página lista aulas de TODOS os cursos, criar uma aula exige antes
  * escolher um curso (courseId é obrigatório). O dropdown lista os cursos
@@ -50,15 +50,15 @@ export function NovaAulaDropdown({ cursos }: { cursos: CursoOption[] }) {
         aria-disabled="true"
       >
         <Plus className="w-3.5 h-3.5" strokeWidth={2.25} aria-hidden="true" />
-        + Nova aula
+        Adicionar aula
       </span>
     );
   }
 
   return (
-    <label className={basePillClasses}>
+    <label className={cn(basePillClasses, 'relative')}>
       <Plus className="w-3.5 h-3.5" strokeWidth={2.25} aria-hidden="true" />
-      + Nova aula
+      Adicionar aula
       <select
         onChange={handleChange}
         defaultValue=""

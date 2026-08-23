@@ -1,12 +1,13 @@
 import Link from 'next/link';
+import { Hospital } from 'lucide-react';
 
 export default function LoginPage({ searchParams }: { searchParams: { error?: string } }) {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md bg-white border rounded-lg shadow-sm p-8">
-        <Link href="/admin/login" className="block text-center mb-6">
-          <span className="text-3xl">🏥</span>
-          <h1 className="text-2xl font-bold mt-2">Agendamento Admin</h1>
+        <Link href="/admin/login" className="flex flex-col items-center gap-2 mb-6">
+          <Hospital className="w-8 h-8 text-accent" strokeWidth={1.75} aria-hidden="true" />
+          <h1 className="text-2xl font-bold">Agendamento Admin</h1>
         </Link>
 
         {searchParams.error === 'invalid' && (

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronDown, Users } from 'lucide-react';
+import { ChevronDown, Users, Check } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { formatBRL } from '@/lib/helpers';
 import { AdminTable } from '@/components/AdminTable';
@@ -187,7 +187,10 @@ export default async function AulaDetalhePage({ params }: { params: { id: string
               <div className="flex flex-col gap-1 items-start">
                 <PagamentoBadge status={r.statusPagamento} />
                 {r.sinalPago && r.statusPagamento !== 'quitado' && (
-                  <span className="text-caption text-accent-glow-bright">✓ sinal</span>
+                  <span className="inline-flex items-center gap-1 text-caption text-accent-glow-bright">
+                    <Check className="w-3 h-3" strokeWidth={2.5} aria-hidden="true" />
+                    sinal
+                  </span>
                 )}
               </div>
             ),

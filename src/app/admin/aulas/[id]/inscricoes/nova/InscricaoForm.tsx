@@ -2,7 +2,14 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createInscricaoAction } from '@/lib/course-actions';
-import { SubmitButton, CancelLink, FormError } from '@/components/AdminForm';
+import {
+  SubmitButton,
+  CancelLink,
+  FormError,
+  inputClass,
+  labelClass,
+  hintClass,
+} from '@/components/AdminForm';
 
 type Props = {
   aulaId: string;
@@ -38,54 +45,54 @@ export function InscricaoForm({
       <input type="hidden" name="aulaId" value={aulaId} />
 
       <div>
-        <label className="block text-sm font-medium mb-1">Nome *</label>
+        <label className={labelClass}>Nome *</label>
         <input
           type="text"
           name="nomeInscrito"
           required
           maxLength={200}
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
+          <label className={labelClass}>Email</label>
           <input
             type="email"
             name="email"
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Telefone</label>
+          <label className={labelClass}>Telefone</label>
           <input
             type="text"
             name="telefone"
             maxLength={30}
             placeholder="+351 9XX XXX XXX"
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3 items-end">
         <div>
-          <label className="block text-sm font-medium mb-1">Valor pago (R$)</label>
+          <label className={labelClass}>Valor pago (R$)</label>
           <input
             type="text"
             name="valorPago"
             inputMode="decimal"
             placeholder="0,00"
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Data do sinal</label>
+          <label className={labelClass}>Data do sinal</label>
           <input
             type="date"
             name="dataSinal"
-            className="w-full border rounded-lg px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         <div className="flex items-center gap-2 pb-2">
@@ -95,32 +102,32 @@ export function InscricaoForm({
             id="sinalPago"
             checked={sinalPago}
             onChange={(e) => setSinalPago(e.target.checked)}
-            className="rounded"
+            className="rounded border-border-subtle bg-card text-accent focus:ring-2 focus:ring-accent/30"
           />
-          <label htmlFor="sinalPago" className="text-sm">
+          <label htmlFor="sinalPago" className="text-body text-text">
             Sinal pago
           </label>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Status do pagamento</label>
+        <label className={labelClass}>Status do pagamento</label>
         <select
           name="statusPagamento"
           defaultValue={sinalPago ? 'sinal_pago' : 'pendente'}
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className={inputClass}
         >
           <option value="pendente">Pendente</option>
           <option value="sinal_pago">Sinal pago</option>
           <option value="quitado">Quitado</option>
           <option value="cancelado">Cancelado</option>
         </select>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className={hintClass}>
           Ao mudar para "quitado", a data de pagamento final é preenchida automaticamente.
         </p>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t">
+      <div className="flex gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton label="Adicionar inscrito" pending={pending} />
         <CancelLink href={`/admin/aulas/${aulaId}`} />
       </div>

@@ -1,6 +1,21 @@
 // Tabela admin reutilizável: loading/empty state, header com link "Novo"
-// Usada nas listagens de cursos/aulas/inscricoes
+// Visual: Dark Violet (PR-1 tokens). Server Component — zero JS no client.
+//
+// Uso:
+//   <AdminTable<Row>
+//     rows={rows}
+//     columns={columns}
+//     rowKey={(r) => r.id}
+//     newHref="/admin/cursos/novo"
+//     newLabel="+ Novo curso"
+//     emptyMessage="Nenhum curso cadastrado ainda."
+//   />
+//
+// Slot custom de ações no header (substitui newHref/newLabel se fornecido):
+//   <AdminTable actions={<Button>Exportar</Button>} ... />
 import Link from 'next/link';
+import { Inbox } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 type Column<T> = {
   key: string;
@@ -17,6 +32,11 @@ type Props<T> = {
   newHref?: string;
   newLabel?: string;
   rowKey: (row: T) => string;
+  /**
+   * Slot de ações no header (ex: botão "Exportar"). Se fornecido, sobrescreve
+   * newHref/newLabel. Default: null (sem slot).
+   */
+  actions?: ReactNode;
 };
 
 export function AdminTable<T>({
@@ -27,34 +47,55 @@ export function AdminTable<T>({
   newHref,
   newLabel = '+ Novo',
   rowKey,
+  actions,
 }: Props<T>) {
+  // Header counter: loading, vazio, ou contagem.
+  const counterText = loading
+    ? 'Carregando…'
+    : `${rows.length} registro${rows.length === 1 ? '' : 's'}`;
+
+  // Slot de ações no header: se o caller passou `actions`, ele tem prioridade
+  // sobre `newHref`/`newLabel` (slot custom sempre vence). Se não passou,
+  // renderiza o botão "+ Novo" quando newHref existe.
+  const headerActions =
+    actions !== undefined ? (
+      actions
+    ) : newHref ? (
+      <Link
+        href={newHref}
+        className="text-label font-medium px-3 py-1.5 bg-accent text-white rounded-pill hover:bg-accent-hover transition-colors duration-150"
+      >
+        {newLabel}
+      </Link>
+    ) : null;
+
   return (
-    <div className="bg-white border rounded-lg overflow-hidden">
-      <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-50">
-        <span className="text-sm text-gray-600">
-          {loading ? 'Carregando…' : `${rows.length} registro${rows.length === 1 ? '' : 's'}`}
+    <div className="bg-card border border-border-subtle rounded-card overflow-hidden shadow-card">
+      {/* Header */}
+      <div className="flex justify-between items-center px-5 py-4 border-b border-border-subtle bg-card-elevated">
+        <span className="text-caption uppercase tracking-wide text-text-muted">
+          {counterText}
         </span>
-        {newHref && (
-          <Link
-            href={newHref}
-            className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            {newLabel}
-          </Link>
-        )}
+        <div className="flex items-center gap-2">{headerActions}</div>
       </div>
 
-      {!loading && rows.length === 0 ? (
-        <div className="p-8 text-center text-gray-500 text-sm">{emptyMessage}</div>
+      {/* Body: loading / empty / table */}
+      {loading ? (
+        <TableSkeleton columns={columns.length} />
+      ) : rows.length === 0 ? (
+        <EmptyState actions={headerActions} message={emptyMessage} />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+          <table className="w-full text-body">
+            <thead className="bg-card-elevated">
               <tr>
                 {columns.map((c) => (
                   <th
                     key={c.key}
-                    className={'text-left px-4 py-2 font-medium text-gray-700 ' + (c.className ?? '')}
+                    className={
+                      'text-left px-5 py-3 font-medium text-caption uppercase tracking-wide text-text-muted ' +
+                      (c.className ?? '')
+                    }
                   >
                     {c.header}
                   </th>
@@ -63,9 +104,15 @@ export function AdminTable<T>({
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={rowKey(row)} className="border-b last:border-b-0 hover:bg-gray-50">
+                <tr
+                  key={rowKey(row)}
+                  className="border-t border-border-subtle transition-colors duration-150 hover:bg-card-elevated"
+                >
                   {columns.map((c) => (
-                    <td key={c.key} className={'px-4 py-2 ' + (c.className ?? '')}>
+                    <td
+                      key={c.key}
+                      className={'px-5 py-3 text-text ' + (c.className ?? '')}
+                    >
                       {c.render(row)}
                     </td>
                   ))}
@@ -75,6 +122,64 @@ export function AdminTable<T>({
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ---------- Sub-componentes internos (privados ao arquivo) ---------- */
+
+function EmptyState({
+  message,
+  actions,
+}: {
+  message: string;
+  actions: ReactNode;
+}) {
+  return (
+    <div className="px-5 py-12 flex flex-col items-center text-center">
+      <div className="w-12 h-12 rounded-card bg-card-elevated border border-border-subtle flex items-center justify-center mb-3">
+        <Inbox className="w-6 h-6 text-text-muted" aria-hidden="true" />
+      </div>
+      <p className="text-body text-text-muted max-w-sm">{message}</p>
+      {actions ? <div className="mt-4">{actions}</div> : null}
+    </div>
+  );
+}
+
+function TableSkeleton({ columns }: { columns: number }) {
+  // 5 linhas placeholder com larguras variadas para parecer "real".
+  const widths = ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2', 'w-3/5'];
+  const rowCount = 5;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-body" role="status" aria-busy="true">
+        <thead className="bg-card-elevated">
+          <tr>
+            {Array.from({ length: columns }).map((_, i) => (
+              <th key={i} className="text-left px-5 py-3">
+                <span className="block h-3 w-24 rounded-pill bg-card animate-pulse" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: rowCount }).map((_, r) => (
+            <tr key={r} className="border-t border-border-subtle">
+              {Array.from({ length: columns }).map((_, c) => (
+                <td key={c} className="px-5 py-3">
+                  <span
+                    className={
+                      'block h-3 rounded-pill bg-card-elevated animate-pulse ' +
+                      widths[c % widths.length]
+                    }
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

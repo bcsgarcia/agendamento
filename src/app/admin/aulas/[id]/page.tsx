@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { ChevronDown, Users, Check } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { formatBRL } from '@/lib/helpers';
 import { AdminTable } from '@/components/AdminTable';
@@ -9,12 +10,26 @@ import { InscricaoActions } from './InscricaoActions';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const STATUS_PAGAMENTO_BADGE: Record<string, string> = {
-  pendente: 'bg-yellow-100 text-yellow-800',
-  sinal_pago: 'bg-blue-100 text-blue-800',
-  quitado: 'bg-green-100 text-green-800',
-  cancelado: 'bg-red-100 text-red-800',
+// Status de pagamento → classes semânticas (dark violet).
+const STATUS_PAGAMENTO_CLASS: Record<string, string> = {
+  pendente: 'bg-pill-inactive text-text-muted border border-border-default',
+  sinal_pago: 'bg-accent-bg text-accent-glow-bright border border-accent/30',
+  quitado: 'bg-success/15 text-success border border-success/40',
+  cancelado: 'bg-danger/15 text-danger border border-danger/40',
 };
+
+function PagamentoBadge({ status }: { status: string }) {
+  return (
+    <span
+      className={
+        'inline-flex items-center px-2.5 py-0.5 rounded-pill text-label font-medium ' +
+        (STATUS_PAGAMENTO_CLASS[status] ?? 'bg-card-elevated text-text-muted border border-border-subtle')
+      }
+    >
+      {status}
+    </span>
+  );
+}
 
 type InscricaoRow = {
   id: string;
@@ -64,49 +79,52 @@ export default async function AulaDetalhePage({ params }: { params: { id: string
 
   return (
     <main className="p-8 max-w-6xl mx-auto">
-      <a href={`/admin/cursos/${aula.course.id}`} className="text-sm text-blue-600">
+      <Link
+        href={`/admin/cursos/${aula.course.id}`}
+        className="text-label text-text-muted hover:text-accent transition-colors duration-150"
+      >
         ← Voltar para {aula.course.name}
-      </a>
+      </Link>
 
       <div className="mt-2 mb-6">
-        <div className="text-sm text-gray-500">
-          <Link href={`/admin/cursos/${aula.course.id}`} className="hover:underline">
+        <div className="text-caption text-text-muted">
+          <Link
+            href={`/admin/cursos/${aula.course.id}`}
+            className="hover:text-accent transition-colors duration-150"
+          >
             {aula.course.name}
           </Link>
         </div>
-        <h1 className="text-3xl font-bold mt-1">Aula</h1>
-        <div className="text-sm text-gray-600 mt-1">
+        <h1 className="text-h1 text-text font-semibold mt-1">Aula</h1>
+        <div className="text-body text-text-muted mt-1">
           {fmtDateTime(aula.dataInicio)} → {fmtTime(aula.dataFim)}
           {aula.local && <> · {aula.local}</>}
         </div>
-        <div className="flex gap-2 mt-2 text-sm">
+        <div className="flex gap-2 mt-3 flex-wrap items-center">
           <span
-            className={`px-2 py-0.5 rounded ${
-              aula.status === 'aberta'
-                ? 'bg-blue-100 text-blue-800'
-                : aula.status === 'lotada'
-                ? 'bg-yellow-100 text-yellow-800'
-                : aula.status === 'cancelada'
-                ? 'bg-red-100 text-red-800'
-                : 'bg-gray-200 text-gray-700'
-            }`}
+            className={
+              'inline-flex items-center px-2.5 py-0.5 rounded-pill text-label font-medium ' +
+              (STATUS_PAGAMENTO_CLASS[aula.status] ?? 'bg-card-elevated text-text-muted border border-border-subtle')
+            }
           >
             {aula.status}
           </span>
           {max != null && (
-            <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-700">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-pill text-label font-medium bg-pill-inactive text-text-muted border border-border-default">
+              <Users className="w-3 h-3" aria-hidden="true" />
               {inscricoesAtivas}/{max} vagas
             </span>
           )}
         </div>
       </div>
 
-      {/* Detalhes da aula + form de editar inline */}
-      <details className="mb-6 bg-white border rounded-lg">
-        <summary className="cursor-pointer px-4 py-3 font-semibold text-sm hover:bg-gray-50">
-          Editar dados da aula
+      {/* Detalhes da aula + form de editar inline (colapsável dark) */}
+      <details className="mb-6 bg-card border border-border-subtle rounded-card shadow-card overflow-hidden">
+        <summary className="cursor-pointer px-5 py-4 flex items-center justify-between text-body font-medium text-text hover:bg-card-elevated transition-colors duration-150 list-none [&::-webkit-details-marker]:hidden">
+          <span>Editar dados da aula</span>
+          <ChevronDown className="w-4 h-4 text-text-muted transition-transform duration-150 group-open:rotate-180" aria-hidden="true" />
         </summary>
-        <div className="p-4 border-t">
+        <div className="p-5 border-t border-border-subtle">
           <AulaForm
             mode="edit"
             courseId={aula.course.id}
@@ -123,44 +141,43 @@ export default async function AulaDetalhePage({ params }: { params: { id: string
         </div>
       </details>
 
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-xl font-semibold">Inscritos ({rows.length})</h2>
-        <Link
-          href={`/admin/aulas/${aula.id}/inscricoes/nova`}
-          className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          + Adicionar inscrito
-        </Link>
-      </div>
+      <h2 className="text-h2 text-text font-medium mb-3">Inscritos ({rows.length})</h2>
 
       <AdminTable<InscricaoRow>
         rows={rows}
         rowKey={(r) => r.id}
         emptyMessage="Nenhum inscrito nesta aula."
+        newHref={`/admin/aulas/${aula.id}/inscricoes/nova`}
+        newLabel="+ Adicionar inscrito"
         columns={[
           {
             key: 'nome',
             header: 'Nome',
             render: (r) => (
               <div>
-                <div className="font-medium">{r.nomeInscrito}</div>
-                {r.email && <div className="text-xs text-gray-500">{r.email}</div>}
+                <div className="font-medium text-text">{r.nomeInscrito}</div>
+                {r.email && <div className="text-caption text-text-muted">{r.email}</div>}
               </div>
             ),
           },
           {
             key: 'tel',
             header: 'Telefone',
-            render: (r) => r.telefone ?? <span className="text-gray-400">—</span>,
+            render: (r) =>
+              r.telefone ? (
+                <span className="text-text">{r.telefone}</span>
+              ) : (
+                <span className="text-text-muted">—</span>
+              ),
           },
           {
             key: 'pago',
             header: 'Pago',
             render: (r) =>
               r.valorPago != null ? (
-                <span className="font-mono text-sm">{formatBRL(r.valorPago)}</span>
+                <span className="font-mono text-body text-text">{formatBRL(r.valorPago)}</span>
               ) : (
-                <span className="text-gray-400">—</span>
+                <span className="text-text-muted">—</span>
               ),
           },
           {
@@ -168,15 +185,12 @@ export default async function AulaDetalhePage({ params }: { params: { id: string
             header: 'Status',
             render: (r) => (
               <div className="flex flex-col gap-1 items-start">
-                <span
-                  className={`px-2 py-0.5 rounded text-xs ${
-                    STATUS_PAGAMENTO_BADGE[r.statusPagamento] ?? 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {r.statusPagamento}
-                </span>
+                <PagamentoBadge status={r.statusPagamento} />
                 {r.sinalPago && r.statusPagamento !== 'quitado' && (
-                  <span className="text-xs text-blue-600">✓ sinal</span>
+                  <span className="inline-flex items-center gap-1 text-caption text-accent-glow-bright">
+                    <Check className="w-3 h-3" strokeWidth={2.5} aria-hidden="true" />
+                    sinal
+                  </span>
                 )}
               </div>
             ),

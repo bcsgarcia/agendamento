@@ -1,16 +1,38 @@
 import Link from 'next/link';
-import { Sparkles, Clock, Hash } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { formatBRL } from '@/lib/helpers';
-import { Card } from '@/components/ui/Card';
+import { AdminTable } from '@/components/AdminTable';
 import { Pill } from '@/components/ui/Pill';
-import { Check, X as XIcon } from 'lucide-react';
+import { DeleteServiceButton } from './DeleteServiceButton';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type ServicoRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  durationMin: number;
+  priceCents: number;
+  active: boolean;
+};
+
 export default async function ServicosPage() {
-  const services = await prisma.service.findMany({ orderBy: { name: 'asc' } });
+  const services = await prisma.service.findMany({
+    orderBy: [{ active: 'desc' }, { name: 'asc' }],
+  });
+
+  const rows: ServicoRow[] = services.map((s) => ({
+    id: s.id,
+    slug: s.slug,
+    name: s.name,
+    description: s.description,
+    durationMin: s.durationMin,
+    priceCents: s.priceCents,
+    active: s.active,
+  }));
 
   return (
     <div className="max-w-6xl">
@@ -21,65 +43,89 @@ export default async function ServicosPage() {
         ← Voltar para dashboard
       </Link>
 
-      <div className="flex items-center gap-3 mt-2 mb-6">
-        <Sparkles className="w-6 h-6 text-accent" strokeWidth={1.75} aria-hidden="true" />
-        <h1 className="text-h1 text-text font-semibold">Catálogo de Serviços</h1>
-        <Pill variant="inactive">
-          {services.length} cadastrado{services.length === 1 ? '' : 's'}
-        </Pill>
+      <div className="mt-2 mb-6">
+        <h1 className="text-h1 text-text font-semibold">Serviços</h1>
+        <p className="text-body text-text-muted mt-1">
+          Catálogo de serviços oferecidos. Serviços inativos ficam ocultos para clientes.
+        </p>
       </div>
 
-      {services.length === 0 ? (
-        <div className="bg-card border border-border-subtle rounded-card px-5 py-12 flex flex-col items-center text-center">
-          <div className="w-12 h-12 rounded-card bg-card-elevated border border-border-subtle flex items-center justify-center mb-3">
-            <Sparkles className="w-6 h-6 text-text-muted" strokeWidth={1.75} aria-hidden="true" />
-          </div>
-          <p className="text-body text-text-muted">Nenhum serviço cadastrado.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {services.map((s) => (
-            <Card key={s.id} className="transition-colors duration-150 hover:border-border-default">
-              <div className="flex justify-between items-start mb-3 gap-3">
-                <h2 className="text-h2 text-text font-medium min-w-0 break-words">{s.name}</h2>
-                <Pill variant="active">{formatBRL(s.priceCents)}</Pill>
+      <AdminTable<ServicoRow>
+        rows={rows}
+        rowKey={(r) => r.id}
+        newHref="/admin/servicos/novo"
+        newLabel="+ Novo serviço"
+        emptyMessage="Nenhum serviço cadastrado ainda. Clique em '+ Novo serviço' para começar."
+        columns={[
+          {
+            key: 'name',
+            header: 'Nome',
+            render: (r) => (
+              <div>
+                <Link
+                  href={`/admin/servicos/${r.id}`}
+                  className="font-medium text-accent hover:text-accent-hover transition-colors duration-150"
+                >
+                  {r.name}
+                </Link>
+                <div className="text-caption text-text-muted font-mono mt-0.5">
+                  {r.slug}
+                </div>
               </div>
-
-              {s.description && (
-                <p className="text-body text-text-muted mb-3 break-words">{s.description}</p>
-              )}
-
-              <footer className="flex items-center gap-3 flex-wrap pt-3 border-t border-border-subtle">
-                <span className="inline-flex items-center gap-1.5 text-caption text-text-muted">
-                  <Clock className="w-3 h-3" strokeWidth={2} aria-hidden="true" />
-                  {s.durationMin} min
-                </span>
-                <span className="text-border-default" aria-hidden="true">
-                  ·
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-caption text-text-muted min-w-0">
-                  <Hash className="w-3 h-3 shrink-0" strokeWidth={2} aria-hidden="true" />
-                  <code className="font-mono truncate">{s.slug}</code>
-                </span>
-                <span className="ml-auto">
-                  <Pill
-                    variant={s.active ? 'active' : 'inactive'}
-                    icon={
-                      s.active ? (
-                        <Check className="w-3 h-3" strokeWidth={2.5} aria-hidden="true" />
-                      ) : (
-                        <XIcon className="w-3 h-3" strokeWidth={2.5} aria-hidden="true" />
-                      )
-                    }
-                  >
-                    {s.active ? 'Ativo' : 'Inativo'}
-                  </Pill>
-                </span>
-              </footer>
-            </Card>
-          ))}
-        </div>
-      )}
+            ),
+          },
+          {
+            key: 'description',
+            header: 'Descrição',
+            render: (r) => (
+              <div className="text-caption text-text-muted max-w-xs truncate" title={r.description}>
+                {r.description}
+              </div>
+            ),
+          },
+          {
+            key: 'duration',
+            header: 'Duração',
+            render: (r) => (
+              <span className="inline-flex items-center gap-1.5 text-caption text-text">
+                <Clock className="w-3 h-3" strokeWidth={2} aria-hidden="true" />
+                {r.durationMin} min
+              </span>
+            ),
+          },
+          {
+            key: 'price',
+            header: 'Preço',
+            render: (r) => formatBRL(r.priceCents),
+          },
+          {
+            key: 'status',
+            header: 'Status',
+            render: (r) =>
+              r.active ? (
+                <Pill variant="active">ativo</Pill>
+              ) : (
+                <Pill variant="inactive">inativo</Pill>
+              ),
+          },
+          {
+            key: 'actions',
+            header: 'Ações',
+            className: 'text-right',
+            render: (r) => (
+              <div className="flex justify-end gap-2">
+                <Link
+                  href={`/admin/servicos/${r.id}/editar`}
+                  className="text-caption font-medium px-2.5 py-1 border border-border-subtle bg-card text-text rounded-[10px] hover:bg-card-elevated transition-colors duration-150"
+                >
+                  Editar
+                </Link>
+                <DeleteServiceButton id={r.id} name={r.name} />
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }

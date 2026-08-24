@@ -9,6 +9,7 @@
 // SVG inline: gradiente "Madame" do logo (rosa claro → coral → rosê), texto "MADAME LASH"
 // estilizado em serif. Para todos os temas: gradiente fixo (rosa), texto chapéu em cinza-chumbo.
 
+import { useId } from 'react';
 import { cn } from '@/components/ui/cn';
 
 export interface MadameLogoProps {
@@ -28,7 +29,15 @@ export function MadameLogo({
   className,
   alt = 'Madame Lash — Administração',
 }: MadameLogoProps) {
-  const id = 'madame-gradient'; // mesmo id em todas instâncias (browser deduplica)
+  // useId() gera IDs únicos por instância tanto em SSR quanto client.
+  // CRÍTICO: AdminShell renderiza DUAS instâncias do MadameLogo (mobile drawer
+  // + desktop sidebar). Se compartilharem o mesmo id do <linearGradient>, o
+  // browser ignora o segundo e os <text> com fill="url(#x)" podem referenciar
+  // o gradient errado OU o fill resolver pra nada — fazendo o "Madame"
+  // desaparecer do logo. Sintoma observado em Playwright headless: "Madame"
+  // some, "LASHES" (fill=currentColor) permanece.
+  const rawId = useId();
+  const id = `madame-gradient-${rawId.replace(/:/g, '')}`;
   return (
     <svg
       role="img"
@@ -47,11 +56,15 @@ export function MadameLogo({
         </linearGradient>
       </defs>
 
-      {/* Texto "MADAME" — serif italic, com gradiente Madame */}
+      {/* Texto "MADAME" — serif italic, com gradiente Madame.
+          font-family começa com Liberation Serif porque é métrica-compatível
+          com Times/Georgia e está disponível em qualquer ambiente (incluindo
+          containers Docker/Chromium headless). Sem isso, Chromium headless
+          falha em renderizar o glifo e o "Madame" desaparece do logo. */}
       <text
         x="0"
         y="30"
-        fontFamily="Georgia, 'Times New Roman', serif"
+        fontFamily="'Liberation Serif', Georgia, 'Times New Roman', serif"
         fontStyle="italic"
         fontWeight="600"
         fontSize="26"
@@ -61,11 +74,12 @@ export function MadameLogo({
         Madame
       </text>
 
-      {/* Texto "LASHES" — cinza-chumbo, sans-serif bold, todo maiúsculo */}
+      {/* Texto "LASHES" — cinza-chumbo, sans-serif bold, todo maiúsculo.
+          Mesmo rationale: Liberation Sans é métrica-compatível com Arial/Helvetica. */}
       <text
         x="0"
         y="52"
-        fontFamily="Inter, system-ui, sans-serif"
+        fontFamily="'Liberation Sans', Inter, system-ui, sans-serif"
         fontWeight="700"
         fontSize="14"
         fill="currentColor"

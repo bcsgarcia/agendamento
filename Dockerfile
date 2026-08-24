@@ -23,5 +23,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.js ./next.config.js
 EXPOSE 3000
-# db push + seed opcional. Se nao tiver ADMIN_EMAIL/ADMIN_PASSWORD, segue sem erro.
-CMD ["sh", "-c", "node node_modules/prisma/build/index.js db push --skip-generate && if [ -n \"$ADMIN_EMAIL\" ] && [ -n \"$ADMIN_PASSWORD\" ]; then npx tsx prisma/seed.ts; else echo 'Skipping seed (no ADMIN_EMAIL/ADMIN_PASSWORD). Use prisma/seed.ts manually.'; fi && npx next start"]
+# ATENÇÃO (2026-08-24): NÃO roda mais seed no boot. Toda mutação em User é
+# feita explicitamente via CLI (ver prisma/seed.ts --help). Não confie em
+# env vars ADMIN_EMAIL/ADMIN_PASSWORD — elas não existem mais.
+CMD ["sh", "-c", "node node_modules/prisma/build/index.js db push --skip-generate && npx next start"]

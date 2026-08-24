@@ -21,7 +21,7 @@ export default async function ServicoEditarPage({
   if (!servico) notFound();
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-4xl">
       <Link
         href={`/admin/servicos/${servico.id}`}
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"

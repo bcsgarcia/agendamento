@@ -17,7 +17,7 @@ export default async function NewUserPage() {
   if (!actor) redirect('/admin/login');
   if (!canManageUsers(actor.role as Role)) {
     return (
-      <main className="p-4 sm:p-6 md:p-8 max-w-3xl mx-auto">
+      <main className="p-4 sm:p-6 md:p-8 max-w-3xl">
         <h1 className="text-h1 text-text font-semibold">Acesso negado</h1>
         <p className="text-body text-text-muted mt-2">
           Você não tem permissão pra criar usuários.
@@ -27,7 +27,7 @@ export default async function NewUserPage() {
   }
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-2xl">
       <nav aria-label="Breadcrumb" className="text-label text-text-muted">
         <Link
           href="/admin/users"

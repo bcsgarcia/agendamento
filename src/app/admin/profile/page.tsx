@@ -25,7 +25,7 @@ export default async function ProfilePage() {
   const displayName = user.name?.trim() || user.email.split('@')[0];
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-2xl">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="text-label text-text-muted">
         <Link

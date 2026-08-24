@@ -29,7 +29,7 @@ export default async function NovaAulaPage({ params }: { params: { id: string } 
   };
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-2xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-2xl">
       <a href={`/admin/cursos/${curso.id}`} className="text-sm text-accent hover:underline">
         ← Voltar para {curso.name}
       </a>

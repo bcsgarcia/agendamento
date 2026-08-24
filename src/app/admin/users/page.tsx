@@ -50,7 +50,7 @@ export default async function UsersPage() {
   // Defense-in-depth: mesmo que o middleware deixe passar, valida role aqui.
   if (!canManageUsers(actor.role as Role)) {
     return (
-      <main className="p-4 sm:p-6 md:p-8 max-w-3xl mx-auto">
+      <main className="p-4 sm:p-6 md:p-8 max-w-3xl">
         <h1 className="text-h1 text-text font-semibold">Acesso negado</h1>
         <p className="text-body text-text-muted mt-2">
           Você não tem permissão pra gerenciar usuários.
@@ -74,7 +74,7 @@ export default async function UsersPage() {
   const rows: UserRow[] = users;
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-6xl">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="text-label text-text-muted">
         <Link

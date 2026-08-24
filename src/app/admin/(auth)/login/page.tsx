@@ -4,6 +4,7 @@ import {
   FormError,
 } from '@/components/AdminForm';
 import { MadameLogo } from '@/components/MadameLogo';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function LoginPage({
   searchParams,
@@ -19,7 +20,11 @@ export default function LoginPage({
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-app-bg p-4 sm:p-6">
-      <div className="w-full max-w-md bg-card border border-border-subtle rounded-card p-4 sm:p-6 md:p-8 shadow-card">
+      <div className="relative w-full max-w-md bg-card border border-border-subtle rounded-card p-4 sm:p-6 md:p-8 shadow-card">
+        <div className="absolute top-3 right-3">
+          <ThemeToggle />
+        </div>
+
         <div
           className="flex flex-col items-center gap-3 mb-6"
           aria-label="Página de login do Painel Admin"

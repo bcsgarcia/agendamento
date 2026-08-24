@@ -1,20 +1,27 @@
 /**
  * Setup inicial: cria/promove users do sistema.
  *
- * Uso básico (criar novo user admin):
- *   tsx prisma/seed.ts --email=voce@x.com --password=suasenha --name="Seu Nome"
+ * Política (2026-08-24): seed NUNCA roda automaticamente no boot do container.
+ * Toda criação/promoção/reset de password é feita explicitamente, via CLI,
+ * por um operador que está rodando o comando de propósito.
  *
- * Definir role específico:
- *   tsx prisma/seed.ts --email=voce@x.com --password=suasenha --role=dev
+ * Caminhos de uso:
  *
- * Promover user existente pra outro role (sem mudar senha):
+ *   # Criar primeiro dev do zero (banco vazio). Exige env vars
+ *   ADMIN_DEV_EMAIL=bruno@x.com ADMIN_DEV_PASSWORD=SuaSenhaForte \
+ *     tsx prisma/seed.ts --bootstrap-dev
+ *
+ *   # Promover user existente pra outro role (sem mudar senha, sem sobrescrever nada)
  *   tsx prisma/seed.ts --email=existente@x.com --promote-to=dev
  *
- * Bootstrap do primeiro DEV (caso especial): use env vars ADMIN_DEV_EMAIL + ADMIN_DEV_PASSWORD.
- *   ADMIN_DEV_EMAIL=bruno@x.com ADMIN_DEV_PASSWORD=SuaSenhaForte tsx prisma/seed.ts --bootstrap-dev
+ *   # Resetar senha de user existente (gera hash novo, mantém role/ativo)
+ *   tsx prisma/seed.ts --email=existente@x.com --reset-password=NovaSenha123
  *
- * Ou via env vars (preferido pra Docker):
- *   ADMIN_EMAIL=... ADMIN_PASSWORD=... ADMIN_NAME=... ADMIN_ROLE=admin tsx prisma/seed.ts
+ *   # Criar novo user admin/user (erro se já existir — use --reset-password ou --promote-to)
+ *   tsx prisma/seed.ts --create --email=novo@x.com --password=SenhaForte --role=admin
+ *
+ * IMPORTANTE: nenhuma combinação de env vars (ADMIN_EMAIL, ADMIN_PASSWORD, etc.)
+ * roda mais automaticamente. O Dockerfile do app não invoca o seed no boot.
  */
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
@@ -28,49 +35,49 @@ function isRole(v: unknown): v is Role {
   return typeof v === 'string' && (VALID_ROLES as readonly string[]).includes(v);
 }
 
-function arg(name: string): string | null {
-  // Primeiro tenta via flag --email=...
-  const flag = `--${name}=`;
-  const argv = process.argv.find((a) => a.startsWith(flag));
-  if (argv) return argv.slice(flag.length);
-  // Depois tenta ADMIN_<NAME> em uppercase (preferido em Docker)
-  const adminEnv = process.env[`ADMIN_${name.toUpperCase()}`];
-  if (adminEnv) return adminEnv;
-  // Fallback: <NAME> em uppercase
-  const envName = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-  return process.env[envName.toUpperCase()] || null;
+function hasFlag(name: string): boolean {
+  return process.argv.some((a) => a === `--${name}`);
 }
 
 function printHelp() {
   console.log(`
 Uso:
-  tsx prisma/seed.ts --email=<email> --password=<senha> [--name=<nome>] [--role=dev|admin|user]
-  tsx prisma/seed.ts --email=<email> --promote-to=dev|admin|user
-  tsx prisma/seed.ts --bootstrap-dev   (lê ADMIN_DEV_EMAIL + ADMIN_DEV_PASSWORD do env)
+  # 1) Bootstrap do primeiro dev (banco vazio)
+  ADMIN_DEV_EMAIL=bruno@x.com ADMIN_DEV_PASSWORD=SuaSenhaForte \\
+    tsx prisma/seed.ts --bootstrap-dev
 
-Variáveis de ambiente (alternativa):
-  ADMIN_EMAIL=...
-  ADMIN_PASSWORD=...
-  ADMIN_NAME=...
-  ADMIN_ROLE=admin (default)
-  ADMIN_DEV_EMAIL=... (apenas pra --bootstrap-dev)
-  ADMIN_DEV_PASSWORD=... (apenas pra --bootstrap-dev)
+  # 2) Promover user existente pra outro role (não mexe em senha)
+  tsx prisma/seed.ts --email=existente@x.com --promote-to=dev|admin|user
+
+  # 3) Resetar senha de user existente (não mexe em role)
+  tsx prisma/seed.ts --email=existente@x.com --reset-password=NovaSenha123
+
+  # 4) Criar novo user (erro se email já existir)
+  tsx prisma/seed.ts --create \\
+    --email=novo@x.com --password=SenhaForte [--name="Nome"] [--role=admin|user]
+
+Variáveis de ambiente (apenas pra --bootstrap-dev):
+  ADMIN_DEV_EMAIL=...
+  ADMIN_DEV_PASSWORD=...
+  ADMIN_DEV_NAME=...
 
 Roles:
-  - dev: tudo (CRUD users com qualquer role; CRUD feature-flags; CRUD whitelist)
+  - dev:   tudo (CRUD users com qualquer role; CRUD feature-flags; CRUD whitelist)
   - admin: tudo EXCETO Configuração (/admin/feature-flags, /admin/whitelist, /admin/users)
-  - user: somente leitura
+  - user:  somente leitura
 
-Exemplos:
-  # criar admin
-  tsx prisma/seed.ts --email=aline@x.com --password=SenhaForte2026 --role=admin
-
-  # promover user existente pra dev
-  tsx prisma/seed.ts --email=bcsgarcia@outlook.com --promote-to=dev
-
-  # bootstrap inicial do primeiro dev (env vars)
-  ADMIN_DEV_EMAIL=bruno@x.com ADMIN_DEV_PASSWORD=SenhaForte tsx prisma/seed.ts --bootstrap-dev
+Regra operacional (2026-08-24):
+  - O seed NÃO roda no boot do container. Toda mutação em User é explícita.
+  - Pra criar user novo, use a UI /admin/users (precisa ser dev logado).
+  - Pra resetar senha esquecida, use este script com --reset-password.
+  - Pra promover user, use este script com --promote-to.
 `);
+}
+
+function getArg(name: string): string | null {
+  const flag = `--${name}=`;
+  const argv = process.argv.find((a) => a.startsWith(flag));
+  return argv ? argv.slice(flag.length) : null;
 }
 
 async function bootstrapDev() {
@@ -79,7 +86,7 @@ async function bootstrapDev() {
   const name = process.env.ADMIN_DEV_NAME || null;
 
   if (!email || !password) {
-    console.error('Erro: --bootstrap-dev requer ADMIN_DEV_EMAIL e ADMIN_DEV_PASSWORD.');
+    console.error('Erro: --bootstrap-dev requer ADMIN_DEV_EMAIL e ADMIN_DEV_PASSWORD no env.');
     printHelp();
     process.exit(1);
   }
@@ -100,6 +107,7 @@ async function bootstrapDev() {
     },
     update: {
       // Bootstrap do primeiro dev: reescreve senha e força role 'dev'.
+      // Só usado uma vez (banco vazio); seguro sobrescrever.
       passwordHash,
       name,
       role: 'dev',
@@ -110,26 +118,20 @@ async function bootstrapDev() {
 }
 
 async function main() {
-  // --help / --h
-  if (process.argv.some((a) => a === '--help' || a === '-h')) {
+  if (hasFlag('help') || hasFlag('h')) {
     printHelp();
     return;
   }
 
-  // --bootstrap-dev: caso especial de criar/promover o primeiro dev.
-  if (process.argv.some((a) => a === '--bootstrap-dev')) {
+  if (hasFlag('bootstrap-dev')) {
     await bootstrapDev();
     return;
   }
 
-  const email = arg('email');
-  const password = arg('password');
-  const name = arg('name') || null;
-  const promoteTo = arg('promote-to');
-  const roleArg = arg('role');
-
-  // --promote-to: não muda senha, só atualiza o role.
+  // --promote-to=<role>: muda role, NÃO mexe em senha/name/outros campos
+  const promoteTo = getArg('promote-to');
   if (promoteTo) {
+    const email = getArg('email');
     if (!email) {
       console.error('Erro: --promote-to requer --email.');
       printHelp();
@@ -147,45 +149,83 @@ async function main() {
     return;
   }
 
-  // Caminho padrão: criar/atualizar user (com senha).
-  if (!email || !password) {
-    console.error('Erro: --email e --password são obrigatórios (ou use --promote-to / --bootstrap-dev).');
-    printHelp();
-    process.exit(1);
+  // --reset-password=<senha>: muda senha, NÃO mexe em role/name/outros campos
+  const resetPassword = getArg('reset-password');
+  if (resetPassword) {
+    const email = getArg('email');
+    if (!email) {
+      console.error('Erro: --reset-password requer --email.');
+      printHelp();
+      process.exit(1);
+    }
+    if (resetPassword.length < 8) {
+      console.error('Erro: senha deve ter pelo menos 8 caracteres.');
+      process.exit(1);
+    }
+    const passwordHash = await bcrypt.hash(resetPassword, 12);
+    const user = await prisma.user.update({
+      where: { email: email.toLowerCase().trim() },
+      data: { passwordHash },
+    });
+    console.log(`✓ ${user.email}: senha resetada (role=${user.role}, ativo=${user.ativo})`);
+    return;
   }
 
-  if (password.length < 8) {
-    console.error('Erro: senha deve ter pelo menos 8 caracteres.');
-    process.exit(1);
+  // --create: criar novo user (ERRO se email já existir — força uso de --reset-password / --promote-to)
+  if (hasFlag('create')) {
+    const email = getArg('email');
+    const password = getArg('password');
+    const name = getArg('name') || null;
+    const roleArg = getArg('role');
+
+    if (!email || !password) {
+      console.error('Erro: --create requer --email e --password.');
+      printHelp();
+      process.exit(1);
+    }
+    if (password.length < 8) {
+      console.error('Erro: senha deve ter pelo menos 8 caracteres.');
+      process.exit(1);
+    }
+    if (roleArg && !isRole(roleArg)) {
+      console.error(`Erro: --role deve ser um de: ${VALID_ROLES.join(', ')}`);
+      process.exit(1);
+    }
+
+    const role: Role = roleArg && isRole(roleArg) ? roleArg : 'admin';
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const user = await prisma.user.create({
+      data: {
+        email: email.toLowerCase().trim(),
+        passwordHash,
+        name,
+        role,
+        ativo: true,
+      },
+    });
+    console.log(`✓ User criado: ${user.email} (id: ${user.id}) role=${user.role}`);
+    return;
   }
 
-  const role: Role = isRole(roleArg) ? roleArg : 'admin';
-
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  const user = await prisma.user.upsert({
-    where: { email: email.toLowerCase().trim() },
-    create: {
-      email: email.toLowerCase().trim(),
-      passwordHash,
-      name,
-      role,
-      ativo: true,
-    },
-    update: {
-      passwordHash,
-      name,
-      role,
-      ativo: true,
-    },
-  });
-
-  console.log(`✓ Usuário criado/atualizado: ${user.email} (id: ${user.id}) role=${user.role}`);
-  console.log('Agora faça login em /admin/login');
+  // Sem flag reconhecida: erro + help
+  console.error('Erro: nenhuma operação especificada.');
+  printHelp();
+  process.exit(1);
 }
 
 main()
-  .catch((e) => {
+  .catch((e: any) => {
+    // P2002 = unique constraint violation. Pra --create com email duplicado,
+    // mostramos mensagem clara (em vez do stack trace do Prisma).
+    if (e?.code === 'P2002' && hasFlag('create')) {
+      const email = getArg('email');
+      console.error(
+        `Erro: já existe user com email "${email}". ` +
+          'Use --reset-password ou --promote-to pra modificar existente.',
+      );
+      process.exit(1);
+    }
     console.error(e);
     process.exit(1);
   })

@@ -53,7 +53,12 @@ export async function logout(): Promise<void> {
 }
 
 /** Retorna o usuário logado ou null. */
-export async function getCurrentUser(): Promise<{ id: string; email: string; name: string | null } | null> {
+export async function getCurrentUser(): Promise<{
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+} | null> {
   const token = cookies().get(SESSION_COOKIE)?.value;
   if (!token) return null;
 
@@ -70,6 +75,7 @@ export async function getCurrentUser(): Promise<{ id: string; email: string; nam
     id: session.user.id,
     email: session.user.email,
     name: session.user.name,
+    role: session.user.role,
   };
 }
 

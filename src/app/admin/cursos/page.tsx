@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { formatEUR } from '@/lib/helpers';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { AdminTable } from '@/components/AdminTable';
 import { Pill } from '@/components/ui/Pill';
 import { DeactivateCursoButton } from './DeactivateCursoButton';
@@ -21,6 +23,9 @@ type CursoRow = {
 };
 
 export default async function CursosPage() {
+  const actor = await getCurrentUser();
+  const canEdit = actor ? canEditInAdmin(actor.role as Role) : true;
+
   const cursos = await prisma.course.findMany({
     orderBy: [{ active: 'desc' }, { name: 'asc' }],
     include: { _count: { select: { aulas: true } } },
@@ -59,6 +64,7 @@ export default async function CursosPage() {
         rowKey={(r) => r.id}
         newHref="/admin/cursos/novo"
         newLabel="+ Novo curso"
+        canCreate={canEdit}
         emptyMessage="Nenhum curso cadastrado ainda. Clique em '+ Novo curso' para começar."
         columns={[
           {
@@ -127,13 +133,17 @@ export default async function CursosPage() {
             className: 'text-right',
             render: (r) => (
               <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
-                <Link
-                  href={`/admin/cursos/${r.id}/editar`}
-                  className="text-caption font-medium px-2.5 py-1 border border-border-subtle bg-card text-text rounded-[10px] hover:bg-card-elevated transition-colors duration-150"
-                >
-                  Editar
-                </Link>
-                {r.active && <DeactivateCursoButton id={r.id} name={r.name} />}
+                {canEdit && (
+                  <>
+                    <Link
+                      href={`/admin/cursos/${r.id}/editar`}
+                      className="text-caption font-medium px-2.5 py-1 border border-border-subtle bg-card text-text rounded-[10px] hover:bg-card-elevated transition-colors duration-150"
+                    >
+                      Editar
+                    </Link>
+                    {r.active && <DeactivateCursoButton id={r.id} name={r.name} />}
+                  </>
+                )}
               </div>
             ),
           },

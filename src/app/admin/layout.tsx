@@ -1,6 +1,8 @@
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { AdminShell } from '@/components/AdminShell';
 import { getCurrentUser } from '@/lib/auth';
+import { canAccessConfig, isRole, type Role } from '@/lib/permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,8 +35,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const displayName = user?.name?.trim() || email.split('@')[0] || 'Admin';
   const initials = initialsFromName(user?.name, email || 'admin@local');
 
+  // Se role for inválida, fallback para 'user' (mais restritivo).
+  const userRole: Role = user && isRole(user.role) ? user.role : 'user';
+
+  // Defense-in-depth: bloqueia acesso a /admin/feature-flags, /admin/whitelist
+  // e /admin/users pra quem NÃO é dev. Mesmo se a página não checar, layout bloqueia.
+  if (
+    pathname.startsWith('/admin/feature-flags') ||
+    pathname.startsWith('/admin/whitelist') ||
+    pathname === '/admin/users' ||
+    pathname.startsWith('/admin/users/')
+  ) {
+    if (!canAccessConfig(userRole)) {
+      redirect('/admin?error=config_forbidden');
+    }
+  }
+
   return (
-    <AdminShell userName={displayName} userInitials={initials}>
+    <AdminShell userName={displayName} userInitials={initials} userRole={userRole}>
       {children}
     </AdminShell>
   );

@@ -4,6 +4,8 @@
 import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { AdminTable } from '@/components/AdminTable';
 import { Pill } from '@/components/ui/Pill';
 import { ExcluirClienteButton } from './ExcluirClienteButton';
@@ -32,6 +34,9 @@ function fmtDate(d: Date | null): string {
 }
 
 export default async function ClientesPage() {
+  const actor = await getCurrentUser();
+  const canEdit = actor ? canEditInAdmin(actor.role as Role) : true;
+
   const customers = await prisma.customer.findMany({
     orderBy: { createdAt: 'desc' },
     take: 200,
@@ -77,6 +82,7 @@ export default async function ClientesPage() {
         rowKey={(r) => r.id}
         newHref="/admin/clientes/novo"
         newLabel="+ Novo cliente"
+        canCreate={canEdit}
         emptyMessage="Nenhum cliente cadastrado ainda. Clique em '+ Novo cliente' para começar."
         columns={[
           {
@@ -169,16 +175,20 @@ export default async function ClientesPage() {
                 >
                   Ver
                 </Link>
-                <Link
-                  href={`/admin/clientes/${r.id}/editar`}
-                  className="text-label px-2.5 py-1 border border-border-subtle rounded-card bg-card text-text hover:bg-card-elevated transition-colors duration-150"
-                >
-                  Editar
-                </Link>
-                <ExcluirClienteButton
-                  id={r.id}
-                  name={r.name ?? 'Sem nome'}
-                />
+                {canEdit && (
+                  <>
+                    <Link
+                      href={`/admin/clientes/${r.id}/editar`}
+                      className="text-label px-2.5 py-1 border border-border-subtle rounded-card bg-card text-text hover:bg-card-elevated transition-colors duration-150"
+                    >
+                      Editar
+                    </Link>
+                    <ExcluirClienteButton
+                      id={r.id}
+                      name={r.name ?? 'Sem nome'}
+                    />
+                  </>
+                )}
               </div>
             ),
           },

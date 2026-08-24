@@ -1,11 +1,18 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { InscricaoForm } from './InscricaoForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NovaInscricaoPage({ params }: { params: { id: string } }) {
+  const actor = await getCurrentUser();
+  if (actor && !canEditInAdmin(actor.role as Role)) {
+    redirect(`/admin/aulas/${params.id}?error=forbidden`);
+  }
+
   const aula = await prisma.aula.findUnique({
     where: { id: params.id },
     include: { course: true },

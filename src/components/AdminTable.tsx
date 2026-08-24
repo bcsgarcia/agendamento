@@ -37,8 +37,18 @@ type Props<T> = {
    * newHref/newLabel. Default: null (sem slot).
    */
   actions?: ReactNode;
+  /**
+   * Quando false, esconde o botão "+ Novo" do header. Default: true.
+   * Usado por RBAC: role "user" não vê botão de criar.
+   */
+  canCreate?: boolean;
 };
 
+/**
+ * Versão "editável" de admin? Se false, esconde +Novo e a coluna de Ações
+ * não tem links de editar/excluir visíveis. Ações customizadas nas colunas
+ * devem checar `canEdit` por conta própria.
+ */
 export function AdminTable<T>({
   rows,
   columns,
@@ -48,6 +58,7 @@ export function AdminTable<T>({
   newLabel = '+ Novo',
   rowKey,
   actions,
+  canCreate = true,
 }: Props<T>) {
   // Header counter: loading, vazio, ou contagem.
   const counterText = loading
@@ -56,11 +67,11 @@ export function AdminTable<T>({
 
   // Slot de ações no header: se o caller passou `actions`, ele tem prioridade
   // sobre `newHref`/`newLabel` (slot custom sempre vence). Se não passou,
-  // renderiza o botão "+ Novo" quando newHref existe.
+  // renderiza o botão "+ Novo" quando newHref existe E canCreate é true.
   const headerActions =
     actions !== undefined ? (
       actions
-    ) : newHref ? (
+    ) : newHref && canCreate ? (
       <Link
         href={newHref}
         className="text-label font-medium px-3 py-1.5 bg-accent text-white rounded-pill hover:bg-accent-hover transition-colors duration-150"

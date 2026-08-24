@@ -24,6 +24,7 @@ import { Pill } from '@/components/ui/Pill';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MadameLogo } from '@/components/MadameLogo';
+import { canAccessConfig, type Role } from '@/lib/permissions';
 
 /**
  * Item de navegação da sidebar.
@@ -68,6 +69,7 @@ export const NAV_SECTIONS: AdminNavSection[] = [
   {
     title: 'Configuração',
     items: [
+      { href: '/admin/users', label: 'Usuários', icon: ShieldCheck, activeBadge: '••' },
       { href: '/admin/whitelist', label: 'Whitelist', icon: ShieldCheck, activeBadge: '••' },
       { href: '/admin/feature-flags', label: 'Feature Flags', icon: Flag, activeBadge: '••' },
     ],
@@ -79,6 +81,8 @@ export interface AdminShellProps {
   userName: string;
   /** Iniciais do usuário para o avatar circular. */
   userInitials: string;
+  /** Role do usuário — controla visibilidade de seções da sidebar (RBAC). */
+  userRole: Role;
   /** Conteúdo da página renderizado no <main>. */
   children: React.ReactNode;
 }
@@ -114,8 +118,17 @@ function pathToBreadcrumbs(pathname: string): { href: string; label: string }[] 
  * Conteúdo da sidebar — renderizado tanto no drawer mobile quanto na sidebar fixa desktop.
  * Mantido como sub-componente para não duplicar markup.
  */
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({
+  userRole,
+  onNavigate,
+}: {
+  userRole: Role;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname() || '/admin';
+  const visibleSections = NAV_SECTIONS.filter((section) =>
+    canAccessConfig(userRole) ? true : section.title !== 'Configuração',
+  );
 
   return (
     <>
@@ -126,7 +139,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Nav sections */}
       <nav aria-label="Navegação admin" className="flex flex-col gap-1">
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.title} className="flex flex-col">
             <div
               className={cn(
@@ -193,7 +206,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export function AdminShell({ userName, userInitials, children }: AdminShellProps) {
+export function AdminShell({ userName, userInitials, userRole, children }: AdminShellProps) {
   const pathname = usePathname() || '/admin';
   const crumbs = pathToBreadcrumbs(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -255,7 +268,7 @@ export function AdminShell({ userName, userInitials, children }: AdminShellProps
           >
             <X className="w-4 h-4" strokeWidth={2} aria-hidden="true" />
           </button>
-          <SidebarContent onNavigate={() => setMenuOpen(false)} />
+          <SidebarContent userRole={userRole} onNavigate={() => setMenuOpen(false)} />
         </aside>
       </div>
 
@@ -268,7 +281,7 @@ export function AdminShell({ userName, userInitials, children }: AdminShellProps
           'sticky top-0 h-screen overflow-y-auto',
         )}
       >
-        <SidebarContent />
+        <SidebarContent userRole={userRole} />
       </aside>
 
       {/* ───── Main + Topbar ───── */}

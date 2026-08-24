@@ -1,10 +1,9 @@
-import Link from 'next/link';
-import { Hospital } from 'lucide-react';
 import {
   inputClass,
   labelClass,
   FormError,
 } from '@/components/AdminForm';
+import { MadameLogo } from '@/components/MadameLogo';
 
 export default function LoginPage({
   searchParams,
@@ -21,23 +20,18 @@ export default function LoginPage({
   return (
     <main className="min-h-screen flex items-center justify-center bg-app-bg p-4 sm:p-6">
       <div className="w-full max-w-md bg-card border border-border-subtle rounded-card p-4 sm:p-6 md:p-8 shadow-card">
-        <Link
-          href="/admin/login"
-          className="flex flex-col items-center gap-2 mb-6 group"
-          aria-label="Página de login do Agendamento Admin"
+        <div
+          className="flex flex-col items-center gap-3 mb-6"
+          aria-label="Página de login do Madame Lash Admin"
         >
-          <Hospital
-            className="w-8 h-8 text-accent"
-            strokeWidth={1.75}
-            aria-hidden="true"
-          />
+          <MadameLogo width={180} height={52} />
           <h1 className="text-h1 text-text font-semibold mt-1">
-            Agendamento Admin
+            Madame Lash Admin
           </h1>
           <span className="text-caption text-text-muted">
             Acesso restrito · auditoria por log
           </span>
-        </Link>
+        </div>
 
         <FormError message={errorMessage} />
 

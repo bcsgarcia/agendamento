@@ -213,7 +213,7 @@ export function BookingForm({
         />
       </div>
 
-      <div className="flex gap-3 pt-4 border-t border-border-subtle">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton
           label={mode === 'create' ? 'Criar booking' : 'Salvar alterações'}
           pending={pending}

@@ -65,7 +65,7 @@ export default async function ServicoDetalhePage({
   );
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
       <Link
         href="/admin/servicos"
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"
@@ -73,7 +73,7 @@ export default async function ServicoDetalhePage({
         ← Voltar para serviços
       </Link>
 
-      <div className="flex justify-between items-start mt-2 mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mt-2 mb-6 gap-4">
         <div className="min-w-0">
           <h1 className="text-h1 text-text font-semibold">{servico.name}</h1>
           <div className="text-caption text-text-muted font-mono mt-1">
@@ -81,7 +81,7 @@ export default async function ServicoDetalhePage({
           </div>
           <div className="mt-3">{statusPill}</div>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex flex-wrap gap-2 shrink-0">
           <Link
             href={`/admin/servicos/${servico.id}/editar`}
             className="px-4 py-2 rounded-card text-label font-medium border border-border-subtle bg-card text-text hover:bg-card-elevated transition-colors duration-150"
@@ -93,7 +93,7 @@ export default async function ServicoDetalhePage({
       </div>
 
       {/* StatTiles — KPI rápido */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-8">
         <StatTile
           label="Duração"
           value={`${servico.durationMin} min`}

@@ -88,7 +88,7 @@ export default async function CursoDetalhePage({ params }: { params: { id: strin
   );
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
       <Link
         href="/admin/cursos"
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"
@@ -96,7 +96,7 @@ export default async function CursoDetalhePage({ params }: { params: { id: strin
         ← Voltar para cursos
       </Link>
 
-      <div className="flex justify-between items-start mt-2 mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mt-2 mb-6 gap-4">
         <div className="min-w-0">
           <h1 className="text-h1 text-text font-semibold">{curso.name}</h1>
           <div className="text-caption text-text-muted font-mono mt-1">{curso.slug}</div>
@@ -107,14 +107,14 @@ export default async function CursoDetalhePage({ params }: { params: { id: strin
         </div>
         <Link
           href={`/admin/cursos/${curso.id}/editar`}
-          className="px-4 py-2 rounded-card text-label font-medium border border-border-subtle bg-card text-text hover:bg-card-elevated transition-colors duration-150"
+          className="self-start sm:self-auto px-4 py-2 rounded-card text-label font-medium border border-border-subtle bg-card text-text hover:bg-card-elevated transition-colors duration-150"
         >
           Editar curso
         </Link>
       </div>
 
       {/* 4 StatTiles — spec PR-5 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <StatTile
           label="Total Aulas"
           value={curso.aulas.length}
@@ -243,7 +243,7 @@ export default async function CursoDetalhePage({ params }: { params: { id: strin
             header: 'Ações',
             className: 'text-right',
             render: (r) => (
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
                 <Link
                   href={`/admin/aulas/${r.id}`}
                   className="text-label px-2.5 py-1 border border-border-subtle rounded-card bg-card text-text hover:bg-card-elevated transition-colors duration-150"

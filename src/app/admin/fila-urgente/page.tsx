@@ -36,7 +36,7 @@ export default async function UrgentesPage() {
         ← Voltar para dashboard
       </Link>
 
-      <div className="flex items-center gap-3 mt-2 mb-2">
+      <div className="flex items-center gap-2 sm:gap-3 mt-2 mb-2 flex-wrap">
         <Flame className="w-6 h-6 text-accent" strokeWidth={1.75} aria-hidden="true" />
         <h1 className="text-h1 text-text font-semibold">Fila de Urgências</h1>
         <Pill variant={urgent.length > 0 ? 'active' : 'inactive'}>
@@ -64,7 +64,7 @@ export default async function UrgentesPage() {
               key={u.id}
               className="bg-card border border-border-subtle rounded-card p-5 transition-colors duration-150 hover:border-border-default"
             >
-              <header className="flex justify-between items-start mb-3 gap-3">
+              <header className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-3">
                 <Pill variant="active">{u.reason}</Pill>
                 <span className="inline-flex items-center gap-1.5 text-caption text-text-muted shrink-0">
                   <Clock className="w-3 h-3" strokeWidth={2} aria-hidden="true" />

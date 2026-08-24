@@ -76,7 +76,7 @@ export default async function ClienteDetalhePage({
   };
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
       <Link
         href="/admin/clientes"
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"
@@ -85,7 +85,7 @@ export default async function ClienteDetalhePage({
       </Link>
 
       {/* Header */}
-      <div className="flex justify-between items-start mt-2 mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mt-2 mb-6 gap-4">
         <div className="min-w-0">
           <h1 className="text-h1 text-text font-semibold truncate">
             {customer.name || 'Sem nome'}
@@ -101,7 +101,7 @@ export default async function ClienteDetalhePage({
             </div>
           )}
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex flex-wrap gap-2 shrink-0">
           <Link
             href={`/admin/clientes/${customer.id}/editar`}
             className="px-4 py-2 rounded-card text-label font-medium border border-border-subtle bg-card text-text hover:bg-card-elevated transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-accent/30"
@@ -117,7 +117,7 @@ export default async function ClienteDetalhePage({
       </div>
 
       {/* Stats (4 tiles) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <StatTile
           label="Total de agendamentos"
           value={totalBookings}
@@ -162,17 +162,17 @@ export default async function ClienteDetalhePage({
         <Card>
           <h2 className="text-h2 text-text font-medium mb-3">Perfil</h2>
           <dl className="space-y-2 text-body">
-            <div className="flex justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-3">
               <dt className="text-caption uppercase tracking-wide text-text-muted">
                 Nome
               </dt>
-              <dd className="text-text text-right">{customer.name || '—'}</dd>
+              <dd className="text-text sm:text-right">{customer.name || '—'}</dd>
             </div>
-            <div className="flex justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-3">
               <dt className="text-caption uppercase tracking-wide text-text-muted">
                 Nascimento
               </dt>
-              <dd className="text-text text-right">
+              <dd className="text-text sm:text-right">
                 {customer.birthDate ? (
                   <>
                     {fmtDate(customer.birthDate)}
@@ -185,19 +185,19 @@ export default async function ClienteDetalhePage({
                 )}
               </dd>
             </div>
-            <div className="flex justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-3">
               <dt className="text-caption uppercase tracking-wide text-text-muted">
                 Horário preferido
               </dt>
-              <dd className="text-text text-right">
+              <dd className="text-text sm:text-right">
                 {customer.preferredTime || '—'}
               </dd>
             </div>
-            <div className="flex justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-3">
               <dt className="text-caption uppercase tracking-wide text-text-muted">
                 Criado em
               </dt>
-              <dd className="text-text text-right">{fmtDateTime(customer.createdAt)}</dd>
+              <dd className="text-text sm:text-right">{fmtDateTime(customer.createdAt)}</dd>
             </div>
           </dl>
         </Card>

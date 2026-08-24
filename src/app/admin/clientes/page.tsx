@@ -57,7 +57,7 @@ export default async function ClientesPage() {
   }));
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
       <Link
         href="/admin"
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"
@@ -162,7 +162,7 @@ export default async function ClientesPage() {
             header: 'Ações',
             className: 'text-right',
             render: (r) => (
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
                 <Link
                   href={`/admin/clientes/${r.id}`}
                   className="text-label px-2.5 py-1 border border-border-subtle rounded-card bg-card text-text hover:bg-card-elevated transition-colors duration-150"

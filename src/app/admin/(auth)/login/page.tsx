@@ -19,8 +19,8 @@ export default function LoginPage({
         : null;
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-app-bg p-6">
-      <div className="w-full max-w-md bg-card border border-border-subtle rounded-card p-8 shadow-card">
+    <main className="min-h-screen flex items-center justify-center bg-app-bg p-4 sm:p-6">
+      <div className="w-full max-w-md bg-card border border-border-subtle rounded-card p-4 sm:p-6 md:p-8 shadow-card">
         <Link
           href="/admin/login"
           className="flex flex-col items-center gap-2 mb-6 group"

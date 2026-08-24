@@ -55,7 +55,7 @@ export function InscricaoForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Email</label>
           <input
@@ -76,7 +76,7 @@ export function InscricaoForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
         <div>
           <label className={labelClass}>Valor pago (€)</label>
           <input
@@ -127,7 +127,7 @@ export function InscricaoForm({
         </p>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t border-border-subtle">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton label="Adicionar inscrito" pending={pending} />
         <CancelLink href={`/admin/aulas/${aulaId}`} />
       </div>

@@ -30,9 +30,9 @@ export const Pill = forwardRef<HTMLButtonElement, PillProps>(function Pill(
   const interactive = typeof onClick === 'function';
 
   const baseClasses = cn(
-    'inline-flex items-center gap-1.5 px-3 py-1 rounded-pill text-label',
+    'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-pill text-label',
     'transition-colors duration-150',
-    'select-none whitespace-nowrap',
+    'select-none whitespace-nowrap max-w-full truncate',
     variant === 'active' && 'text-white bg-gradient-to-r from-accent-bg to-accent-bg-2',
     variant === 'inactive' && 'bg-pill-inactive text-text-muted',
     interactive && 'cursor-pointer hover:opacity-90 active:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg',

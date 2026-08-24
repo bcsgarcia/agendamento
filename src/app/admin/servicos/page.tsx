@@ -113,7 +113,7 @@ export default async function ServicosPage() {
             header: 'Ações',
             className: 'text-right',
             render: (r) => (
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
                 <Link
                   href={`/admin/servicos/${r.id}/editar`}
                   className="text-caption font-medium px-2.5 py-1 border border-border-subtle bg-card text-text rounded-[10px] hover:bg-card-elevated transition-colors duration-150"

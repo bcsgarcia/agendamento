@@ -10,7 +10,7 @@ export default async function CursoEditarPage({ params }: { params: { id: string
   if (!curso) notFound();
 
   return (
-    <main className="p-8 max-w-4xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto">
       <Link
         href={`/admin/cursos/${curso.id}`}
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"

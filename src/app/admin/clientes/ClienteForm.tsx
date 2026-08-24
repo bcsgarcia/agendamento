@@ -178,7 +178,7 @@ export function ClienteForm({ initial, mode, redirectPath }: Props) {
         <p className={hintClass}>Separar tags por vírgula. Vão aparecer como pílulas no perfil.</p>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t border-border-subtle">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton
           label={mode === 'create' ? 'Criar cliente' : 'Salvar alterações'}
           pending={pending}

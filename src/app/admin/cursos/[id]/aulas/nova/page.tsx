@@ -1,10 +1,17 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { AulaForm } from '@/app/admin/aulas/AulaForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NovaAulaPage({ params }: { params: { id: string } }) {
+  const actor = await getCurrentUser();
+  if (actor && !canEditInAdmin(actor.role as Role)) {
+    redirect(`/admin/cursos/${params.id}?error=forbidden`);
+  }
+
   const curso = await prisma.course.findUnique({ where: { id: params.id } });
   if (!curso) notFound();
 

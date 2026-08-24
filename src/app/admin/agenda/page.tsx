@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { CalendarDays } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { formatEUR } from '@/lib/helpers';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { AdminTable } from '@/components/AdminTable';
 import { Pill } from '@/components/ui/Pill';
 import { DeleteBookingButton } from './DeleteBookingButton';
@@ -31,6 +33,9 @@ type BookingRow = {
 };
 
 export default async function AgendaPage() {
+  const actor = await getCurrentUser();
+  const canEdit = actor ? canEditInAdmin(actor.role as Role) : true;
+
   const bookings = await prisma.booking.findMany({
     include: { customer: true, service: true },
     orderBy: { startsAt: 'asc' },
@@ -76,6 +81,7 @@ export default async function AgendaPage() {
         rowKey={(r) => r.id}
         newHref="/admin/agenda/novo"
         newLabel="+ Novo booking"
+        canCreate={canEdit}
         emptyMessage="Nenhum booking cadastrado ainda. Clique em '+ Novo booking' para criar o primeiro."
         columns={[
           {
@@ -146,13 +152,17 @@ export default async function AgendaPage() {
                 >
                   Ver
                 </Link>
-                <Link
-                  href={`/admin/agenda/${r.id}/editar`}
-                  className="text-caption font-medium px-2.5 py-1 border border-border-subtle bg-card text-text rounded-[10px] hover:bg-card-elevated transition-colors duration-150"
-                >
-                  Editar
-                </Link>
-                <DeleteBookingButton id={r.id} customerLabel={r.customerLabel} />
+                {canEdit && (
+                  <>
+                    <Link
+                      href={`/admin/agenda/${r.id}/editar`}
+                      className="text-caption font-medium px-2.5 py-1 border border-border-subtle bg-card text-text rounded-[10px] hover:bg-card-elevated transition-colors duration-150"
+                    >
+                      Editar
+                    </Link>
+                    <DeleteBookingButton id={r.id} customerLabel={r.customerLabel} />
+                  </>
+                )}
               </div>
             ),
           },

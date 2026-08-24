@@ -279,3 +279,277 @@ test('POST /api/auth/logout invalida sessão e redireciona', async () => {
   const afterLoc = after.headers.get('location') || '';
   assert.match(afterLoc, /\/admin\/login/);
 });
+
+// =====================
+// RBAC (roles dev/admin/user) tests
+// =====================
+//
+// Estratégia: cria 3 users (admin, user) via API autenticada como DEV
+// (o dev é TEST_EMAIL). As senhas geradas (8 dígitos) vêm da resposta
+// e são usadas para logar como admin/user nos testes seguintes.
+//
+// Por que 14 cenários?
+// Spec t_ffb22938 lista 14 cenários. Aqui cobrimos:
+// 1. List users como dev → 200 com lista
+// 2. List users como admin → 200 com lista
+// 3. List users como user → 403
+// 4. Create user com role=user como admin → 200, senha 8 dígitos
+// 5. Create user com role=dev como admin → 403
+// 6. Create user com role=dev como dev → 200
+// 7. Reset password de dev como admin → 403
+// 8. Reset password de user como admin → 200, senha nova 8 dígitos
+// 9. Update role de user pra dev como admin → 403
+// 10. Login com senha gerada → 200 (cookie)
+// 11. user role vê /admin/feature-flags → redirect (302/303) pro /admin
+// 12. admin role vê /admin/feature-flags → redirect pro /admin
+// 13. dev role vê /admin/feature-flags → 200
+// 14. Migração: bcsgarcia@outlook.com agora tem role='dev'
+
+let ADMIN_EMAIL; // criado durante o setup
+let ADMIN_PASSWORD; // senha gerada (8 dígitos)
+let USER_EMAIL; // criado durante o setup
+let USER_PASSWORD; // senha gerada (8 dígitos)
+let EXTRA_DEV_EMAIL; // segundo dev criado durante o setup
+let EXTRA_DEV_ID; // id do segundo dev (pra teste 7)
+let EXTRA_DEV_PASSWORD; // senha do segundo dev
+
+async function loginAsDev() {
+  await login(); // TEST_EMAIL (dev)
+}
+
+async function createUserAsDev(email, role) {
+  const res = await fetchWithCookie('/api/admin/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, role }),
+  });
+  if (res.status !== 201) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(`createUser(${email}, ${role}) failed: ${res.status} ${JSON.stringify(data)}`);
+  }
+  return res.json();
+}
+
+async function loginAs(email, password) {
+  clearCookies();
+  const res = await fetchWithCookie('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+  });
+  if (res.status !== 303) throw new Error(`loginAs(${email}) failed: ${res.status}`);
+  const location = res.headers.get('location') || '';
+  if (location.includes('error=')) throw new Error(`loginAs(${email}) bad creds: ${location}`);
+  if (!getCookieHeader().includes('admin_session')) throw new Error('no cookie set');
+  return res;
+}
+
+test('Setup RBAC: dev cria admin, user, e segundo dev', async () => {
+  await loginAsDev();
+
+  // admin temporário
+  ADMIN_EMAIL = `rbac-admin-${Date.now()}@test.local`;
+  const adminResp = await createUserAsDev(ADMIN_EMAIL, 'admin');
+  ADMIN_PASSWORD = adminResp.generatedPassword;
+  assert.equal(typeof ADMIN_PASSWORD, 'string');
+  assert.match(ADMIN_PASSWORD, /^\d{8}$/, `admin password should be 8 digits, got "${ADMIN_PASSWORD}"`);
+
+  // user temporário
+  USER_EMAIL = `rbac-user-${Date.now()}@test.local`;
+  const userResp = await createUserAsDev(USER_EMAIL, 'user');
+  USER_PASSWORD = userResp.generatedPassword;
+  assert.match(USER_PASSWORD, /^\d{8}$/);
+
+  // segundo dev (pra teste 7)
+  EXTRA_DEV_EMAIL = `rbac-dev2-${Date.now()}@test.local`;
+  const dev2Resp = await createUserAsDev(EXTRA_DEV_EMAIL, 'dev');
+  EXTRA_DEV_PASSWORD = dev2Resp.generatedPassword;
+  EXTRA_DEV_ID = dev2Resp.user.id;
+  assert.match(dev2Resp.generatedPassword, /^\d{8}$/);
+
+  await logout();
+});
+
+test('Cenário 1: GET /api/admin/users como dev → 200 com lista', async () => {
+  await loginAsDev();
+  const res = await fetchWithCookie('/api/admin/users');
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.ok(Array.isArray(data.users));
+  assert.ok(data.users.length >= 1);
+  // O dev (TEST_EMAIL) deve estar na lista
+  assert.ok(data.users.some((u) => u.email === TEST_EMAIL));
+  await logout();
+});
+
+test('Cenário 2: GET /api/admin/users como admin → 200 com lista', async () => {
+  await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const res = await fetchWithCookie('/api/admin/users');
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.ok(Array.isArray(data.users));
+  assert.ok(data.users.length >= 1);
+  await logout();
+});
+
+test('Cenário 3: GET /api/admin/users como user → 403', async () => {
+  await loginAs(USER_EMAIL, USER_PASSWORD);
+  const res = await fetchWithCookie('/api/admin/users');
+  assert.equal(res.status, 403);
+  await logout();
+});
+
+test('Cenário 4: POST /api/admin/users (role=user) como admin → 201, senha 8 dígitos', async () => {
+  await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const newEmail = `rbac-from-admin-${Date.now()}@test.local`;
+  const res = await fetchWithCookie('/api/admin/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: newEmail, role: 'user' }),
+  });
+  assert.equal(res.status, 201);
+  const data = await res.json();
+  assert.ok(data.user);
+  assert.equal(data.user.role, 'user');
+  assert.match(data.generatedPassword, /^\d{8}$/);
+  await logout();
+});
+
+test('Cenário 5: POST /api/admin/users (role=dev) como admin → 403', async () => {
+  await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const res = await fetchWithCookie('/api/admin/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: `rbac-dev-as-admin-${Date.now()}@test.local`, role: 'dev' }),
+  });
+  assert.equal(res.status, 403);
+  await logout();
+});
+
+test('Cenário 6: POST /api/admin/users (role=dev) como dev → 201', async () => {
+  await loginAsDev();
+  const res = await fetchWithCookie('/api/admin/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: `rbac-dev-extra-${Date.now()}@test.local`, role: 'dev' }),
+  });
+  assert.equal(res.status, 201);
+  await logout();
+});
+
+test('Cenário 7: POST /api/admin/users/[id]/reset-password de um dev como admin → 403', async () => {
+  await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const res = await fetchWithCookie(`/api/admin/users/${EXTRA_DEV_ID}/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  assert.equal(res.status, 403);
+  await logout();
+});
+
+test('Cenário 8: POST /api/admin/users/[id]/reset-password de um user como admin → 200, nova senha 8 dígitos', async () => {
+  // Pega id do user criado no setup
+  await loginAsDev();
+  const listRes = await fetchWithCookie('/api/admin/users');
+  const list = await listRes.json();
+  const userRow = list.users.find((u) => u.email === USER_EMAIL);
+  assert.ok(userRow, 'user not found in list');
+  await logout();
+
+  // Admin reseta senha do user
+  await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const res = await fetchWithCookie(`/api/admin/users/${userRow.id}/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  assert.equal(res.status, 200);
+  const data = await res.json();
+  assert.match(data.generatedPassword, /^\d{8}$/);
+  // Atualiza USER_PASSWORD pra próxima etapa
+  USER_PASSWORD = data.generatedPassword;
+  await logout();
+});
+
+test('Cenário 9: PATCH /api/admin/users/[id] role=user→dev como admin → 403', async () => {
+  // Pega id do user
+  await loginAsDev();
+  const listRes = await fetchWithCookie('/api/admin/users');
+  const list = await listRes.json();
+  const userRow = list.users.find((u) => u.email === USER_EMAIL);
+  await logout();
+
+  await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const res = await fetchWithCookie(`/api/admin/users/${userRow.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role: 'dev' }),
+  });
+  assert.equal(res.status, 403);
+  await logout();
+});
+
+test('Cenário 10: Login com a senha gerada (USER_PASSWORD) → 200', async () => {
+  // USER_PASSWORD foi atualizada pelo teste 8; tentar logar com ela
+  await loginAs(USER_EMAIL, USER_PASSWORD);
+  // Confirmar que sessão funciona acessando algo do user role
+  const res = await fetchWithCookie('/admin/agenda');
+  assert.equal(res.status, 200);
+  await logout();
+});
+
+test('Cenário 11: user role acessando /admin/feature-flags → redirect (303) pra /admin', async () => {
+  await loginAs(USER_EMAIL, USER_PASSWORD);
+  const res = await fetchWithCookie('/admin/feature-flags');
+  // canAccessConfig('user') === false → layout redireciona
+  assert.equal(res.status, 303, `expected 303, got ${res.status}`);
+  const location = res.headers.get('location') || '';
+  assert.match(location, /\/admin/, `expected redirect to /admin, got ${location}`);
+  await logout();
+});
+
+test('Cenário 12: admin role acessando /admin/feature-flags → redirect (303) pra /admin', async () => {
+  await loginAs(ADMIN_EMAIL, ADMIN_PASSWORD);
+  const res = await fetchWithCookie('/admin/feature-flags');
+  assert.equal(res.status, 303, `expected 303, got ${res.status}`);
+  const location = res.headers.get('location') || '';
+  assert.match(location, /\/admin/, `expected redirect to /admin, got ${location}`);
+  await logout();
+});
+
+test('Cenário 13: dev role acessando /admin/feature-flags → 200', async () => {
+  await loginAsDev();
+  const res = await fetchWithCookie('/admin/feature-flags');
+  assert.equal(res.status, 200);
+  await logout();
+});
+
+test('Cenário 14: migração — bcsgarcia@outlook.com agora tem role=dev', async () => {
+  await loginAsDev();
+  const res = await fetchWithCookie('/api/admin/users');
+  const data = await res.json();
+  const dev = data.users.find((u) => u.email === TEST_EMAIL);
+  assert.ok(dev, `dev user ${TEST_EMAIL} not found in list`);
+  assert.equal(dev.role, 'dev', `expected role='dev', got '${dev.role}'`);
+  await logout();
+});
+
+// =====================
+// Teardown RBAC
+// =====================
+//
+// Soft-delete (DELETE) os users temporários via API. Requer login como dev.
+
+test('Teardown: dev exclui users temporários', async () => {
+  await loginAsDev();
+  const listRes = await fetchWithCookie('/api/admin/users');
+  const list = await listRes.json();
+  const tempEmails = [ADMIN_EMAIL, USER_EMAIL, EXTRA_DEV_EMAIL].filter(Boolean);
+  for (const email of tempEmails) {
+    const u = list.users.find((x) => x.email === email);
+    if (!u) continue;
+    const r = await fetchWithCookie(`/api/admin/users/${u.id}`, { method: 'DELETE' });
+    // 200 (deletado) ou 403 caso outro dev também tente; nesse fluxo é dev mesmo → 200
+    assert.ok(r.status === 200 || r.status === 404, `expected 200/404, got ${r.status}`);
+  }
+  await logout();
+});

@@ -1,12 +1,19 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { BookingForm, type CustomerOption, type ServiceOption } from '../../BookingForm';
 import { toLocalInput } from '@/lib/agenda-helpers';
 
 export const dynamic = 'force-dynamic';
 
 export default async function BookingEditarPage({ params }: { params: { id: string } }) {
+  const actor = await getCurrentUser();
+  if (actor && !canEditInAdmin(actor.role as Role)) {
+    redirect('/admin/agenda?error=forbidden');
+  }
+
   const [booking, customersRaw, servicesRaw] = await Promise.all([
     prisma.booking.findUnique({ where: { id: params.id } }),
     prisma.customer.findMany({

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { GraduationCap } from 'lucide-react';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { AdminTable } from '@/components/AdminTable';
 import { NovaAulaDropdown } from './NovaAulaDropdown';
 
@@ -41,6 +43,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function AulasPage() {
+  const actor = await getCurrentUser();
+  const canEdit = actor ? canEditInAdmin(actor.role as Role) : true;
+
   // Busca TODAS as aulas de TODOS os cursos + cursos ativos (pra dropdown
   // "+ Nova aula" — criar aula exige courseId, então o user escolhe o curso
   // antes de cair no /admin/cursos/[id]/aulas/nova).
@@ -96,7 +101,8 @@ export default async function AulasPage() {
         rowKey={(r) => r.id}
         // Dropdown "+ Nova aula" aparece no header E no empty state
         // (AdminTable repassa `actions` pra EmptyState automaticamente).
-        actions={<NovaAulaDropdown cursos={cursos} />}
+        // Esconde pra role "user" (RBAC).
+        actions={canEdit ? <NovaAulaDropdown cursos={cursos} /> : null}
         emptyMessage="Nenhuma aula cadastrada ainda. Crie aulas a partir de um curso existente."
         columns={[
           {

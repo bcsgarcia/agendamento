@@ -1,8 +1,10 @@
 // Página "Editar cliente" — wrapper server que renderiza ClienteForm em modo edit.
 
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { ClienteForm } from '../../ClienteForm';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +14,12 @@ export default async function ClienteEditarPage({
 }: {
   params: { id: string };
 }) {
+  // RBAC: role "user" não pode editar — redireciona.
+  const actor = await getCurrentUser();
+  if (actor && !canEditInAdmin(actor.role as Role)) {
+    redirect('/admin/clientes?error=forbidden');
+  }
+
   const customer = await prisma.customer.findUnique({ where: { id: params.id } });
   if (!customer) notFound();
 

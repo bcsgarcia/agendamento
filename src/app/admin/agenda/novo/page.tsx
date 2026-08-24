@@ -1,10 +1,18 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { BookingForm, type CustomerOption, type ServiceOption } from '../BookingForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NovoBookingPage() {
+  const actor = await getCurrentUser();
+  if (actor && !canEditInAdmin(actor.role as Role)) {
+    redirect('/admin/agenda?error=forbidden');
+  }
+
   // Busca customers (ordenados por nome, com fallback pro telefone) e
   // services ativos (ordenados por nome). Esses são os dois selects do form.
   const [customersRaw, servicesRaw] = await Promise.all([

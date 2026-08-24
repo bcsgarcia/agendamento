@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { Clock } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { formatEUR } from '@/lib/helpers';
+import { getCurrentUser } from '@/lib/auth';
+import { canEditInAdmin, type Role } from '@/lib/permissions';
 import { AdminTable } from '@/components/AdminTable';
 import { Pill } from '@/components/ui/Pill';
 import { DeleteServiceButton } from './DeleteServiceButton';
@@ -20,6 +22,9 @@ type ServicoRow = {
 };
 
 export default async function ServicosPage() {
+  const actor = await getCurrentUser();
+  const canEdit = actor ? canEditInAdmin(actor.role as Role) : true;
+
   const services = await prisma.service.findMany({
     orderBy: [{ active: 'desc' }, { name: 'asc' }],
   });
@@ -55,6 +60,7 @@ export default async function ServicosPage() {
         rowKey={(r) => r.id}
         newHref="/admin/servicos/novo"
         newLabel="+ Novo serviço"
+        canCreate={canEdit}
         emptyMessage="Nenhum serviço cadastrado ainda. Clique em '+ Novo serviço' para começar."
         columns={[
           {
@@ -114,13 +120,17 @@ export default async function ServicosPage() {
             className: 'text-right',
             render: (r) => (
               <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
-                <Link
-                  href={`/admin/servicos/${r.id}/editar`}
-                  className="text-caption font-medium px-2.5 py-1 border border-border-subtle bg-card text-text rounded-[10px] hover:bg-card-elevated transition-colors duration-150"
-                >
-                  Editar
-                </Link>
-                <DeleteServiceButton id={r.id} name={r.name} />
+                {canEdit && (
+                  <>
+                    <Link
+                      href={`/admin/servicos/${r.id}/editar`}
+                      className="text-caption font-medium px-2.5 py-1 border border-border-subtle bg-card text-text rounded-[10px] hover:bg-card-elevated transition-colors duration-150"
+                    >
+                      Editar
+                    </Link>
+                    <DeleteServiceButton id={r.id} name={r.name} />
+                  </>
+                )}
               </div>
             ),
           },

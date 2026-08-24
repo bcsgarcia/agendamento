@@ -22,11 +22,11 @@ export default function LoginPage({
       <div className="w-full max-w-md bg-card border border-border-subtle rounded-card p-4 sm:p-6 md:p-8 shadow-card">
         <div
           className="flex flex-col items-center gap-3 mb-6"
-          aria-label="Página de login do Madame Lash Admin"
+          aria-label="Página de login do Madame Lashes Admin"
         >
           <MadameLogo width={180} height={52} />
           <h1 className="text-h1 text-text font-semibold mt-1">
-            Madame Lash Admin
+            Madame Lashes Admin
           </h1>
           <span className="text-caption text-text-muted">
             Acesso restrito · auditoria por log

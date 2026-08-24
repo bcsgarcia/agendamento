@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Agendamento — Madame Lash',
+  title: 'Madame Lashes Admin',
   description: 'Sistema de agendamento Madame Lash',
 };
 

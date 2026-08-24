@@ -57,8 +57,8 @@ export function ConfirmForm({
 
   const colors =
     variant === 'danger'
-      ? 'bg-red-600 text-white hover:bg-red-700'
-      : 'bg-yellow-500 text-white hover:bg-yellow-600';
+      ? 'bg-danger text-white hover:opacity-90 active:opacity-80'
+      : 'bg-success text-white hover:opacity-90 active:opacity-80';
 
   return (
     <>

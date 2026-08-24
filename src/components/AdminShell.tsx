@@ -22,6 +22,8 @@ import {
 import { cn } from '@/components/ui/cn';
 import { Pill } from '@/components/ui/Pill';
 import { ToastProvider } from '@/components/ui/Toast';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { MadameLogo } from '@/components/MadameLogo';
 
 /**
  * Item de navegação da sidebar.
@@ -117,22 +119,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      {/* Brand */}
+      {/* Brand — Madame Lash logo */}
       <div className="flex items-center gap-2.5 px-2.5 pb-4 mb-3.5 border-b border-border-subtle">
-        <div
-          className={cn(
-            'w-7 h-7 rounded-lg grid place-items-center',
-            'bg-gradient-to-br from-accent to-accent-glow',
-            'text-text font-semibold text-[13px]',
-          )}
-          aria-hidden="true"
-        >
-          A
-        </div>
-        <div className="leading-tight">
-          <div className="text-text font-semibold text-[14px]">Aline Estética</div>
-          <div className="text-text-muted text-[11px]">Admin · v2</div>
-        </div>
+        <MadameLogo width={140} height={40} />
       </div>
 
       {/* Nav sections */}
@@ -364,6 +353,9 @@ export function AdminShell({ userName, userInitials, children }: AdminShellProps
               ⌘K
             </kbd>
           </div>
+
+          {/* Theme toggle (light/dark) */}
+          <ThemeToggle />
 
           {/* User chip */}
           <div

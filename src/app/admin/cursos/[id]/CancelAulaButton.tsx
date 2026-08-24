@@ -32,7 +32,7 @@ export function CancelAulaButton({ id }: { id: string }) {
         type="button"
         onClick={() => setAskOpen(true)}
         disabled={pending}
-        className="text-xs px-2 py-1 border border-red-300 text-red-700 rounded hover:bg-red-50 disabled:opacity-50"
+        className="text-xs px-2 py-1 border border-danger/40 text-danger rounded hover:bg-danger/10 disabled:opacity-50"
       >
         {pending ? '…' : 'Cancelar'}
       </button>

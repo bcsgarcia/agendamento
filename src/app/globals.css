@@ -3,24 +3,99 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Base reset — Dark Violet (Figma vFyulzL0VwHV9Favq4fNjK)
-   Inter is loaded via next/font/google in src/app/layout.tsx and applied
-   to <body className={inter.className}> — no @import needed.
+   Tema: Madame Lash (light, default) + Dark Violet (dark, via .dark no <html>)
+
+   Tailwind config (tailwind.config.ts) define cada token como:
+     'app-bg': { light: 'var(--app-bg)', dark: 'var(--app-bg-dark)' }
+   e gera automaticamente:
+     .bg-app-bg       { background-color: var(--app-bg); }
+     .dark .bg-app-bg { background-color: var(--app-bg-dark); }
+
+   Aqui definimos os valores das CSS vars + props que Tailwind não cobre
+   (body bg direto, glow radial, scrollbar, transitions, gradient Madame).
    ───────────────────────────────────────────────────────────────────────── */
+:root {
+  /* ─── Light (Madame Lash) ─── */
+  --app-bg:           #FFFFFF;
+  --app-bg-alt:       #FBFAF7;
+  --card:             #FFFFFF;
+  --card-elevated:    #F6EFEA;
+  --accent:           #E8917E;
+  --accent-hover:     #C97C6E;
+  --accent-bg:        #E8917E;
+  --accent-bg-2:      #C97C6E;
+  --accent-glow:      #F6C4BC;
+  --accent-glow-bright: #FFFFFF;
+  --pill-inactive:    #F0E5DD;
+  --border-subtle:    #F0E5DD;
+  --border-default:   #E8DDD3;
+  --text:             #4D4D4F;
+  --text-muted:       #6E6E70;
+  --success:          #6BAA75;
+  --danger:           #D9534F;
+
+  /* Glow / shadow (alpha no rgba, separado pra crossfade funcionar) */
+  --shadow-glow:      rgba(232, 145, 126, 0.15);
+  --shadow-card:      rgba(232, 145, 126, 0.04);
+
+  /* Scrollbar */
+  --scrollbar-track:        #FFFFFF;
+  --scrollbar-thumb:        #F0E5DD;
+  --scrollbar-thumb-hover:  #E8DDD3;
+  --scrollbar-border:       #FFFFFF;
+
+  /* Glow radial do bg */
+  --glow-rgba: 232, 145, 126;
+
+  /* Form controls nativos (input text, select, scrollbar widget) */
+  color-scheme: light;
+}
+
+:root.dark {
+  /* ─── Dark (Dark Violet) ─── */
+  --app-bg:           #06050B;
+  --app-bg-alt:       #0B0914;
+  --card:             #1E1C2A;
+  --card-elevated:    #2A2640;
+  --accent:           #5540D6;
+  --accent-hover:     #503FCA;
+  --accent-bg:        #2A2251;
+  --accent-bg-2:      #362B6D;
+  --accent-glow:      #3E3377;
+  --accent-glow-bright: #8175AA;
+  --pill-inactive:    #33313D;
+  --border-subtle:    #1D1934;
+  --border-default:   #2C2656;
+  --text:             #F1F1F2;
+  --text-muted:       #9B98A8;
+  --success:          #46A758;
+  --danger:           #E5484D;
+
+  --shadow-glow:      rgba(94, 75, 175, 0.15);
+  --shadow-card:      rgba(125, 117, 170, 0.06);
+
+  --scrollbar-track:        #06050B;
+  --scrollbar-thumb:        #2C2656;
+  --scrollbar-thumb-hover:  #3E3377;
+  --scrollbar-border:       #06050B;
+
+  --glow-rgba: 94, 75, 175;
+
+  color-scheme: dark;
+}
+
+/* Body: bg + texto direto via vars (transição suave entre temas) */
 body {
-  background-color: #06050B;
-  color: #F1F1F2;
+  background-color: var(--app-bg);
+  color: var(--text);
   font-size: 13px;
   line-height: 20px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 300ms ease, color 300ms ease;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Subtle radial glow — top-left purple accent
-   (body is the opaque surface; :root::before with z-index:-1 paints
-   behind body, visible through the viewport's transparent html element)
-   ───────────────────────────────────────────────────────────────────────── */
+/* Glow radial no canto superior esquerdo — cor derivada do tema */
 :root::before {
   content: '';
   position: fixed;
@@ -28,34 +103,32 @@ body {
   left: -200px;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle at center, rgba(94, 75, 175, 0.18) 0%, rgba(94, 75, 175, 0) 70%);
+  background: radial-gradient(circle at center, rgba(var(--glow-rgba), 0.18) 0%, rgba(var(--glow-rgba), 0) 70%);
   pointer-events: none;
   z-index: -1;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Scrollbar — dark mode
-   ───────────────────────────────────────────────────────────────────────── */
+/* ─── Scrollbar (Webkit) ─── */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #06050B;
+  background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2C2656;
+  background: var(--scrollbar-thumb);
   border-radius: 6px;
-  border: 2px solid #06050B;
+  border: 2px solid var(--scrollbar-border);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3E3377;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2C2656 #06050B;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -70,4 +143,31 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Madame Lash gradient (logo "Madame") — usado em headings e botões CTA
+   ───────────────────────────────────────────────────────────────────────── */
+.madame-gradient {
+  background: linear-gradient(135deg, #F6C4BC 0%, #E8917E 50%, #C97C6E 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.btn-madame {
+  background: linear-gradient(135deg, #E8917E 0%, #C97C6E 100%);
+  color: #FFFFFF;
+  transition: filter 200ms ease, transform 150ms ease;
+}
+.btn-madame:hover {
+  background: linear-gradient(135deg, #C97C6E 0%, #B86A5C 100%);
+}
+.btn-madame:active {
+  transform: scale(0.98);
+}
+.btn-madame:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(246, 196, 188, 0.6);
 }

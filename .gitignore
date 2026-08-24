@@ -71,3 +71,6 @@ Thumbs.db
 *.tar.gz
 *.zip
 backups/
+
+# Git worktrees (isolated workspaces)
+.worktrees/

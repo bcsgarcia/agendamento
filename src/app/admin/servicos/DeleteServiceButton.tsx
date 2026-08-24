@@ -36,7 +36,7 @@ export function DeleteServiceButton({ id, name }: { id: string; name: string }) 
         type="button"
         onClick={() => setAskOpen(true)}
         disabled={pending}
-        className="text-caption font-medium px-2.5 py-1 border border-red-300 text-red-700 rounded-[10px] hover:bg-red-50 disabled:opacity-50"
+        className="text-caption font-medium px-2.5 py-1 border border-danger/40 text-danger rounded-[10px] hover:bg-danger/10 disabled:opacity-50"
       >
         {pending ? '…' : 'Excluir'}
       </button>

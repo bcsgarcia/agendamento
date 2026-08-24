@@ -136,7 +136,7 @@ export function CursoForm({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
           <label className={labelClass}>Carga horária (h)</label>
           <input
@@ -209,7 +209,7 @@ export function CursoForm({
         </label>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t border-border-subtle">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton
           label={mode === 'create' ? 'Criar curso' : 'Salvar alterações'}
           pending={pending}

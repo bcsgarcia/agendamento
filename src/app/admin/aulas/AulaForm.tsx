@@ -72,7 +72,7 @@ export function AulaForm({
       )}
       {mode === 'edit' && <input type="hidden" name="id" value={aulaId ?? ''} />}
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Data/hora início *</label>
           <input
@@ -107,7 +107,7 @@ export function AulaForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Max alunos</label>
           <input
@@ -138,7 +138,7 @@ export function AulaForm({
         </div>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t border-border-subtle">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton
           label={mode === 'create' ? 'Criar aula' : 'Salvar alterações'}
           pending={pending}

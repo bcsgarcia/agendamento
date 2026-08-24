@@ -47,7 +47,7 @@ export default async function WhitelistPage({
         ← Voltar para dashboard
       </Link>
 
-      <div className="flex items-center gap-3 mt-2 mb-2">
+      <div className="flex items-center gap-2 sm:gap-3 mt-2 mb-2 flex-wrap">
         <ShieldCheck className="w-6 h-6 text-accent" strokeWidth={1.75} aria-hidden="true" />
         <h1 className="text-h1 text-text font-semibold">Whitelist</h1>
         <Pill variant="inactive">
@@ -138,14 +138,14 @@ export default async function WhitelistPage({
             {entries.map((entry) => (
               <li
                 key={entry.id}
-                className="px-5 py-4 flex items-start justify-between gap-4 transition-colors duration-150 hover:bg-card-elevated"
+                className="px-4 sm:px-5 py-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 transition-colors duration-150 hover:bg-card-elevated"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     <Pill variant="inactive">
                       <span className="font-mono font-semibold">{countryCode(entry.phone)}</span>
                     </Pill>
-                    <code className="font-mono text-body text-text bg-app-bg-alt px-2 py-1 rounded-md border border-border-subtle">
+                    <code className="font-mono text-body text-text bg-app-bg-alt px-2 py-1 rounded-md border border-border-subtle break-all">
                       {entry.phone}
                     </code>
                     {entry.active ? (
@@ -166,7 +166,7 @@ export default async function WhitelistPage({
                     Adicionado: {new Date(entry.criadoEm).toLocaleString('pt-BR')}
                   </p>
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0 flex-wrap">
                   {/* Toggle ativo/inativo */}
                   <form action="/api/admin/whitelist" method="post">
                     <input type="hidden" name="action" value="toggle" />

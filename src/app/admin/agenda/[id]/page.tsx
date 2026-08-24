@@ -30,7 +30,7 @@ export default async function BookingDetalhePage({ params }: { params: { id: str
   const customerLabel = booking.customer.name || booking.customer.phone;
 
   return (
-    <main className="p-8 max-w-4xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto">
       <Link
         href="/admin/agenda"
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"
@@ -38,7 +38,7 @@ export default async function BookingDetalhePage({ params }: { params: { id: str
         ← Voltar para agenda
       </Link>
 
-      <div className="flex justify-between items-start mt-2 mb-6 gap-3">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mt-2 mb-6 gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-caption text-text-muted">
             <CalendarDays className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
@@ -61,7 +61,7 @@ export default async function BookingDetalhePage({ params }: { params: { id: str
         </div>
         <Link
           href={`/admin/agenda/${booking.id}/editar`}
-          className="shrink-0 px-4 py-2 rounded-card text-label font-medium border border-border-subtle bg-card text-text hover:bg-card-elevated transition-colors duration-150 flex items-center gap-2"
+          className="self-start sm:self-auto shrink-0 px-4 py-2 rounded-card text-label font-medium border border-border-subtle bg-card text-text hover:bg-card-elevated transition-colors duration-150 flex items-center gap-2"
         >
           <Pencil className="w-3.5 h-3.5" strokeWidth={2} aria-hidden="true" />
           Editar

@@ -72,11 +72,11 @@ export function AdminTable<T>({
   return (
     <div className="bg-card border border-border-subtle rounded-card overflow-hidden shadow-card">
       {/* Header */}
-      <div className="flex justify-between items-center px-5 py-4 border-b border-border-subtle bg-card-elevated">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 px-4 sm:px-5 py-3 sm:py-4 border-b border-border-subtle bg-card-elevated">
         <span className="text-caption uppercase tracking-wide text-text-muted">
           {counterText}
         </span>
-        <div className="flex items-center gap-2">{headerActions}</div>
+        <div className="flex items-center gap-2 self-end sm:self-auto">{headerActions}</div>
       </div>
 
       {/* Body: loading / empty / table */}

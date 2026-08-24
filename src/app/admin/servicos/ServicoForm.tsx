@@ -129,7 +129,7 @@ export function ServicoForm({ initial, mode, redirectPath }: Props) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Duração (min)</label>
           <input
@@ -169,7 +169,7 @@ export function ServicoForm({ initial, mode, redirectPath }: Props) {
         </label>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t border-border-subtle">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border-subtle">
         <SubmitButton
           label={mode === 'create' ? 'Criar serviço' : 'Salvar alterações'}
           pending={pending}

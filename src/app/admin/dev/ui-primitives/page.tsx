@@ -14,7 +14,7 @@ export default function UiPrimitivesDemoPage() {
   const [toggleDisabled, setToggleDisabled] = useState(false);
 
   return (
-    <main className="min-h-screen p-8 max-w-5xl mx-auto">
+    <main className="min-h-screen p-4 sm:p-6 md:p-8 max-w-5xl mx-auto">
       <header className="mb-8">
         <h1 className="text-h1 text-text font-semibold mb-2">
           UI Primitives · Dark Violet

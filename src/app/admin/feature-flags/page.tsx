@@ -57,7 +57,7 @@ export default async function FeatureFlagsPage() {
         ← Voltar para dashboard
       </Link>
 
-      <div className="flex items-center gap-3 mt-2 mb-2">
+      <div className="flex items-center gap-2 sm:gap-3 mt-2 mb-2 flex-wrap">
         <Flag className="w-6 h-6 text-accent" strokeWidth={1.75} aria-hidden="true" />
         <h1 className="text-h1 text-text font-semibold">Feature Flags</h1>
         <Pill variant="inactive">

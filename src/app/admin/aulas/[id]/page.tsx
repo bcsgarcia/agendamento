@@ -79,7 +79,7 @@ export default async function AulaDetalhePage({ params }: { params: { id: string
   const max = aula.maxAlunos ?? aula.course.maxAlunos;
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-6xl">
       <Link
         href={`/admin/cursos/${aula.course.id}`}
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"

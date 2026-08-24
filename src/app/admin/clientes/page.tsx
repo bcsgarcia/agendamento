@@ -62,7 +62,7 @@ export default async function ClientesPage() {
   }));
 
   return (
-    <main className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
+    <main className="p-4 sm:p-6 md:p-8 max-w-6xl">
       <Link
         href="/admin"
         className="text-label text-text-muted hover:text-accent transition-colors duration-150"

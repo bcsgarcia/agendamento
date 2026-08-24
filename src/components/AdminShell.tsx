@@ -15,6 +15,7 @@ import {
   Flag,
   Search,
   LogOut,
+  UserCircle,
   Menu,
   X,
   type LucideIcon,
@@ -57,6 +58,7 @@ export const NAV_SECTIONS: AdminNavSection[] = [
       { href: '/admin/aulas', label: 'Aulas', icon: GraduationCap, activeBadge: '••' },
       { href: '/admin/clientes', label: 'Clientes', icon: Users, activeBadge: '••' },
       { href: '/admin/agenda', label: 'Agenda', icon: CalendarDays, activeBadge: '••' },
+      { href: '/admin/profile', label: 'Meu perfil', icon: UserCircle, activeBadge: '••' },
     ],
   },
   {

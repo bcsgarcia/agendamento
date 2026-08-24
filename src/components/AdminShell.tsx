@@ -134,7 +134,7 @@ function SidebarContent({
     <>
       {/* Brand — Madame Lash logo */}
       <div className="flex items-center gap-2.5 px-2.5 pb-4 mb-3.5 border-b border-border-subtle">
-        <MadameLogo width={140} height={40} />
+        <MadameLogo width={140} />
       </div>
 
       {/* Nav sections */}

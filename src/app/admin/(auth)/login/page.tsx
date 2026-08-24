@@ -24,7 +24,7 @@ export default function LoginPage({
           className="flex flex-col items-center gap-3 mb-6"
           aria-label="Página de login do Painel Admin"
         >
-          <MadameLogo width={180} height={52} priority />
+          <MadameLogo width={180} priority />
           <h1 className="text-h1 text-text font-semibold mt-1">
             Painel Admin
           </h1>

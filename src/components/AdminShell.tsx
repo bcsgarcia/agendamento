@@ -26,6 +26,7 @@ import { ToastProvider } from '@/components/ui/Toast';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MadameLogo } from '@/components/MadameLogo';
 import { canAccessConfig, type Role } from '@/lib/permissions';
+import { UrgenciaNotifier } from '@/components/UrgenciaNotifier';
 
 /**
  * Item de navegação da sidebar.
@@ -232,6 +233,11 @@ export function AdminShell({ userName, userInitials, userRole, children }: Admin
 
   return (
     <div className="min-h-screen bg-app-bg text-text md:grid md:grid-cols-[240px_1fr]">
+      {/* UrgenciaNotifier: polling 30s + banner in-page + Service Worker push.
+          Renderizado UMA VEZ aqui, não em cada page — assim o badge da sidebar
+          atualiza mesmo quando o user está em outras rotas (/admin/cursos etc). */}
+      <UrgenciaNotifier />
+
       {/* ───── Mobile drawer (overlay < md) ───── */}
       <div
         className={cn(

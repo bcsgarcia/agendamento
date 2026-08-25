@@ -182,9 +182,32 @@ model User {
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
 
-  sessions Session[]
+  sessions            Session[]
+  pushSubscriptions   PushSubscription[]
 
   @@index([email])
+}
+
+/// Subscription Web Push de um user para receber notificação quando
+/// nova urgência entra na fila. Endpoint único por navegador (pode ter
+/// várias subscriptions por user, mas cada endpoint só aparece 1x).
+model PushSubscription {
+  id                  String    @id @default(cuid())
+  userId              String
+  /// URL do push service (ex: https://fcm.googleapis.com/...).
+  endpoint            String    @unique
+  /// Chave pública do cliente (ECDSA P-256, base64url).
+  p256dh              String
+  /// Auth secret do cliente (base64url).
+  auth                String
+  ativo               Boolean   @default(true)
+  criadoEm            DateTime  @default(now())
+  ultima_utilizacaoEm DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([ativo])
 }
 
 model Session {

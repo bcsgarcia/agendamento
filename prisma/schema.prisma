@@ -115,6 +115,10 @@ model Inscricao {
 model UrgentQueue {
   id              String    @id @default(uuid())
   customerId      String?
+  /// Nome completo do cliente (≥ 2 palavras), coletado pela Andy ANTES do
+  /// enfileirar (exceto modo anônimo). Aparece no card /admin/fila-urgente
+  /// pra equipa saber como cumprimentar o cliente no follow-up.
+  customerName    String?
   reason          String
   contextSnapshot String
   createdAt       DateTime  @default(now())

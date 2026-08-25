@@ -110,6 +110,7 @@ export default async function UrgentesPage({
               tab={tab}
               item={{
                 id: u.id,
+                customerName: u.customerName ?? null,
                 reason: u.reason,
                 contextSnapshot: u.contextSnapshot,
                 createdAt: u.createdAt.toISOString(),

@@ -17,6 +17,8 @@ export type UrgenciaTab = 'pendentes' | 'concluidos' | 'arquivados';
 
 export interface UrgenciaItem {
   id: string;
+  /** Nome completo do cliente (≥ 2 palavras). Pode ser null se Andy operou em modo anônimo. */
+  customerName: string | null;
   reason: string;
   contextSnapshot: string;
   createdAt: string; // serializado pelo Next (Date -> string)
@@ -146,12 +148,19 @@ export function UrgenciaCard({ item, tab }: { item: UrgenciaItem; tab: UrgenciaT
 
   return (
     <article className="bg-card border border-border-subtle rounded-card p-5 transition-colors duration-150 hover:border-border-default">
-      {/* Header: pill de reason + timestamp */}
+      {/* Header: pill de reason + nome do cliente (se tiver) + timestamp */}
       <header className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Pill variant={isPending ? 'active' : 'inactive'}>{item.reason}</Pill>
-          {isConcluido && <Pill variant="inactive">concluída</Pill>}
-          {isArquivado && <Pill variant="inactive">arquivada</Pill>}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Pill variant={isPending ? 'active' : 'inactive'}>{item.reason}</Pill>
+            {isConcluido && <Pill variant="inactive">concluída</Pill>}
+            {isArquivado && <Pill variant="inactive">arquivada</Pill>}
+          </div>
+          {item.customerName && (
+            <p className="text-body font-medium text-text">
+              {item.customerName}
+            </p>
+          )}
         </div>
         <span className="inline-flex items-center gap-1.5 text-caption text-text-muted shrink-0">
           <Clock className="w-3 h-3" strokeWidth={2} aria-hidden="true" />

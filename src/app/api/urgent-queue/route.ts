@@ -12,6 +12,7 @@ import { notifyUrgenciaAsync } from '@/lib/push';
 
 const Body = z.object({
   customerPhone: z.string().optional(),
+  customerName: z.string().optional(),
   reason: z.string().min(1),
   contextSnapshot: z.string().min(1)
 });
@@ -42,7 +43,12 @@ export async function POST(req: NextRequest) {
       customerId = customer.id;
     }
     const urgent = await prisma.urgentQueue.create({
-      data: { customerId, reason: data.reason, contextSnapshot: data.contextSnapshot }
+      data: {
+        customerId,
+        customerName: data.customerName,
+        reason: data.reason,
+        contextSnapshot: data.contextSnapshot
+      }
     });
 
     // Dispara Web Push pra todos admins com subscription ativa.

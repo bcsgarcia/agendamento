@@ -1,8 +1,14 @@
 // API: enfileira urgência (POST) e lista filtrada por aba (GET).
 // Tab padrão 'pendentes' mantém compat com a integração Fluxi (PR #15).
+//
+// HOOK DE NOTIFICAÇÃO (PR #40, 2026-08-25):
+//   Após criar urgência no POST, dispara Web Push pra todos os admins
+//   que tenham subscription ativa. Se as chaves VAPID não estiverem
+//   configuradas, vira no-op (lib/push.ts trata isso com warning).
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
+import { notifyUrgenciaAsync } from '@/lib/push';
 
 const Body = z.object({
   customerPhone: z.string().optional(),
@@ -38,6 +44,12 @@ export async function POST(req: NextRequest) {
     const urgent = await prisma.urgentQueue.create({
       data: { customerId, reason: data.reason, contextSnapshot: data.contextSnapshot }
     });
+
+    // Dispara Web Push pra todos admins com subscription ativa.
+    // Fire-and-forget: não bloqueia resposta HTTP (POST continua rápido
+    // mesmo se push demorar). Erros são logados dentro de notifyUrgenciaAsync.
+    notifyUrgenciaAsync(urgent.reason, urgent.contextSnapshot);
+
     return NextResponse.json(urgent);
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json({ error: 'Dados inválidos', details: e.errors }, { status: 400 });

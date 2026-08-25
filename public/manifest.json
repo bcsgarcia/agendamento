@@ -1,0 +1,18 @@
+{
+  "name": "Madame Lashes Admin",
+  "short_name": "Madame Lash",
+  "description": "Sistema de agendamento Madame Lash",
+  "start_url": "/admin",
+  "scope": "/admin/",
+  "display": "standalone",
+  "background_color": "#0f0a1f",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "/logo-madame-lash-light.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

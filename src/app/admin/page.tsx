@@ -68,7 +68,7 @@ export default async function AdminHome() {
   // urgent pendentes primeiro porque é o "número que pula na cara".
   const [urgentCount, bookingsToday, customersTotal, servicesActive, cursosActive] =
     await Promise.all([
-      prisma.urgentQueue.count({ where: { resolvedAt: null } }),
+      prisma.urgentQueue.count({ where: { resolvedAt: null, archivedAt: null } }),
       prisma.booking.count({
         where: {
           startsAt: {

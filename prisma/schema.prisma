@@ -120,8 +120,14 @@ model UrgentQueue {
   createdAt       DateTime  @default(now())
   resolvedAt      DateTime?
   resolvedBy      String?
+  /// Nota opcional da equipa ao marcar como concluída.
+  resolvedNote    String?
+  /// Quando preenchido, some das listas "Pendentes" e "Concluídos". Aparece em "Arquivados".
+  archivedAt      DateTime?
+  archivedBy      String?
 
   @@index([resolvedAt, createdAt])
+  @@index([archivedAt, createdAt])
 }
 
 model ConversationState {
